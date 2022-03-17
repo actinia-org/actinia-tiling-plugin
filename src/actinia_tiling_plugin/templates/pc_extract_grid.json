@@ -16,7 +16,7 @@
       ],
       "outputs": [
         {
-          "param": "ouput",
+          "param": "output",
           "value": "{{ grid_prefix }}{{ cat }}"
         }
       ]
