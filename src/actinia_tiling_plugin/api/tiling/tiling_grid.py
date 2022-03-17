@@ -120,25 +120,22 @@ class AsyncTilingProcessGrid(PersistentProcessing):
                 source_mapset_name=self.target_mapset_name)
             self._lock_temp_mapset()
 
+    def _execute_finalization(self):
+        # Copy local mapset to original location, merge mapsets
+        self._copy_merge_tmp_mapset_to_target_mapset()
+
     def _execute(self):
 
         self._execute_preparation()
         pconv = ProcessChainConverter()
-        # mapset_mr = MapsetManagementResourceUser()
-        # mapset_resp = mapset_mr.get(self.location_name, self.mapset_name)
-        # mapset_info = json.loads(mapset_resp.data)["process_results"]
 
         # v.mkgrid with output map and box
         req_data_orig = self.request_data
         grid_prefix = req_data_orig["grid_prefix"]
         grid_name = f"grid_{uuid4().hex}"
         box = f"{req_data_orig['width']},{req_data_orig['height']}"
-        tpl1 = tplEnv.get_template("pc_create_grid.json")
-        pc1 = json.loads(tpl1.render(
-            box=box,
-            grid_name=grid_name
-        ).replace('\n', '').replace(" ", ""))
-        pl1 = pconv.process_chain_to_process_list(pc1)
+        tpl_values1 = {"grid_name": grid_name, "box": box}
+        pl1, pconv = pctpl_to_pl("pc_create_grid.json", tpl_values1)
         self.output_parser_list = pconv.output_parser_list
         self._execute_process_list(pl1)
         self._parse_module_outputs()
@@ -155,22 +152,14 @@ class AsyncTilingProcessGrid(PersistentProcessing):
             "n": num_grid_cells
         }
         pl2, _ = pctpl_to_pl("pc_extract_grid.json", tpl_values2)
-        # tpl2 = tplEnv.get_template("pc_extract_grid.json")
-        # pc2 = json.loads(tpl2.render(
-        #     grid_name=grid_name,
-        #     grid_prefix=grid_prefix,
-        #     n=num_grid_cells
-        # ).replace('\n', '').replace(" ", ""))
-        # pl2 = pconv.process_chain_to_process_list(pc2)
         self._execute_process_list(pl2)
 
         # delete grid
-        tpl3 = tplEnv.get_template("pc_delete_vector.json")
-        pc3 = json.loads(tpl3.render(
-            vector_name=grid_name
-        ).replace('\n', '').replace(" ", ""))
-        pl3 = pconv.process_chain_to_process_list(pc3)
+        tpl_values3 = {"vector_name": grid_name}
+        pl3, _ = pctpl_to_pl("pc_delete_vector.json", tpl_values3)
         self._execute_process_list(pl3)
+
+        self._execute_finalization()
 
         # make response pretty
         self.module_results = list()
