@@ -7,7 +7,7 @@
       "inputs": [
         {
           "param": "input",
-          "value": {{ grid_name }}
+          "value": "{{ grid_name }}"
         },
         {
           "param": "cat",

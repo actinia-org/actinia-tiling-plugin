@@ -99,46 +99,15 @@ class AsyncTilingProcessGrid(PersistentProcessing):
         # mapset_info = json.loads(mapset_resp.data)["process_results"]
 
         # v.mkgrid with output map and box
-        req_data = self.request_data
-        grid_prefix = req_data["grid_prefix"]
+        req_data_orig = self.request_data
+        grid_prefix = req_data_orig["grid_prefix"]
         grid_name = f"grid_{uuid4().hex}"
-        box = f"{req_data['width']},{req_data['height']}"
-        self.request_data = {
-            "list": [
-                {
-                     "id": "create_grid",
-                     "module": "v.mkgrid",
-                     "inputs": [
-                         {
-                             "param": "box",
-                             "value": box
-                         }
-                     ],
-                     "outputs": [
-                         {
-                             "param": "map",
-                             "value": grid_name
-                         }
-                     ]
-                },
-                {
-                     "id": "grid_info",
-                     "module": "v.info",
-                     "inputs": [
-                         {
-                             "param": "map",
-                             "value": grid_name
-                         }
-                     ],
-                     "flags": "t",
-                     "stdout": {
-                        "id": "grid_info",
-                        "format": "list",
-                        "delimiter": "|"}
-                }
-            ],
-            "version": "1"
-        }
+        box = f"{req_data_orig['width']},{req_data_orig['height']}"
+        tpl1 = tplEnv.get_template("pc_create_grid.json")
+        self.request_data = json.loads(tpl1.render(
+            box=box,
+            grid_name=grid_name
+        ).replace('\n', '').replace(" ", ""))
         PersistentProcessing._execute(self, skip_permission_check=True)
         grid_info = self.module_results["grid_info"]
         num_grid_cells = int([
@@ -147,28 +116,13 @@ class AsyncTilingProcessGrid(PersistentProcessing):
         ][0])
 
         # extract grid cells
-        extract_pc = {"list": [], "version": "1"}
-        # v.extract input=hpdagrid out=hodagrid1 cat=1
-        tpl_path = 'pc_extract_grid.json'
-        import pdb; pdb.set_trace()
-        tplEnv.list_templates()
-        import pdb; pdb.set_trace()
-        tpl = tplEnv.get_template(tpl_path)
-
-        self.request_data = json.loads(tpl.render(
+        tpl2 = tplEnv.get_template("pc_extract_grid.json")
+        self.request_data = json.loads(tpl2.render(
             grid_name=grid_name,
             grid_prefix=grid_prefix,
             n=num_grid_cells
         ).replace('\n', '').replace(" ", ""))
-        # for num in range(1, num_grid_cells + 1):
-        #     print(num)
-        #     proc = deepcopy(extract_proc)
-        #     proc["inputs"][1]["value"] = str(num)
-        #     proc["outputs"][0]["value"] = f"{grid_prefix}{num}"
-        #     extract_pc["list"].append(proc)
-        #     del proc
-        # self.request_data = extract_pc
-
+        PersistentProcessing._execute(self, skip_permission_check=True)
 
         # delete grid
 

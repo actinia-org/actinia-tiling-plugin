@@ -30,17 +30,3 @@ from jinja2 import Environment, PackageLoader
 tplEnv = Environment(
     loader=PackageLoader('actinia_tiling_plugin', 'templates')
 )
-
-
-# import os
-# from jinja2 import Environment, PackageLoader, FileSystemLoader
-#
-# import pdb; pdb.set_trace()
-# print(os.path.join(os.path.dirname(__file__), "..", "templates"))
-# print(os.listdir(os.path.join(os.path.dirname(__file__), "..", "templates")))
-#
-#
-# tplEnv = Environment(
-#     loader=FileSystemLoader(
-#         os.path.join(os.path.dirname(__file__), "..", "templates"))
-# )
