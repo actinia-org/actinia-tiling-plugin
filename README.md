@@ -72,8 +72,21 @@ python3 setup.py test --addopts "-m 'integrationtest'"
 python3 setup.py test --addopts "-m 'dev'"
 ```
 
-## Starting steps for own plugin
-If you want to have your onw plugin you can use this repo to create it by doing
-the following.
+## Tiling Example
+```
+actinia_base_url=http://localhost:8088/api/v2
+mapset_url=${actinia_base_url}/locations/loc_25832/mapsets/hpda_tiling_user2
+auth="actinia-gdi:actinia-gdi"
 
-TODO
+curl -u ${auth} -X GET ${mapset_url}/info | jq
+
+# grid tiling
+# the region should be set correctly
+json_reg=test_postbodies/set_region_for_epsg25832.json
+curl -u ${auth} -X POST ${mapset_url}/processing_async -H 'accept: application/json' -H 'Content-Type: application/json' -d @${json_reg} | jq
+
+json=test_postbodies/grid_tiling_pb.json
+curl -u ${auth} -X POST ${mapset_url}/tiling_processes/grid -H 'accept: application/json' -H 'Content-Type: application/json' -d @${json} | jq
+
+
+```

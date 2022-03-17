@@ -1,0 +1,27 @@
+{
+  "list": [
+    {% for cat in range(0, n + 1) %}
+    {
+      "id": "",
+      "module": "v.extract",
+      "inputs": [
+        {
+          "param": "input",
+          "value": {{ grid_name }}
+        },
+        {
+          "param": "cat",
+          "value": "{{ cat }}"
+        }
+      ],
+      "outputs": [
+        {
+          "param": "ouput",
+          "value": "{{ grid_prefix }}{{ cat }}"
+        }
+      ]
+    }{{ "," if not loop.last }}
+    {% endfor %}
+  ],
+  "version": "1"
+}

@@ -1,0 +1,41 @@
+{
+            "list": [
+                {
+                     "id": "set_region_for_epsg25832",
+                     "module": "g.region",
+                     "inputs": [
+                         {
+                             "param": "n",
+                             "value": "5552000"
+                         },
+                         {
+                             "param": "s",
+                             "value": "5536000"
+                         },
+                         {
+                             "param": "e",
+                             "value": "752000"
+                         },
+                         {
+                             "param": "w",
+                             "value": "728000"
+                         },
+                         {
+                             "param": "res",
+                             "value": "1"
+                         }
+                     ]
+                },
+                {
+                     "id": "dummy_mapcalc",
+                     "module": "r.mapcalc",
+                     "inputs": [
+                         {
+                             "param": "expression",
+                             "value": "baum = 5"
+                         }
+                     ]
+                }
+            ],
+            "version": "1"
+        }
