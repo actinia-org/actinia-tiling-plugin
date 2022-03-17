@@ -24,28 +24,22 @@ __author__ = "Anika Weinmann"
 __copyright__ = "Copyright 2022 mundialis GmbH & Co. KG"
 __maintainer__ = "mundialis GmbH % Co. KG"
 
-from copy import deepcopy
-from jinja2 import Template
 import json
 from flask import make_response, jsonify
-from flask_restful_swagger_2 import Resource
 from flask_restful_swagger_2 import swagger
 import pickle
 from uuid import uuid4
 
-from actinia_core.core.common.app import auth
-from actinia_core.core.common.api_logger import log_api_call
 from actinia_core.rest.persistent_processing import PersistentProcessing
 from actinia_core.rest.resource_base import ResourceBase
 from actinia_core.core.common.redis_interface import enqueue_job
-from actinia_core.core.common.app import URL_PREFIX
 
-from actinia_core.rest.vector_layer import VectorLayerResource
 from actinia_core.core.common.process_chain import ProcessChainConverter
 
 
 from actinia_tiling_plugin.apidocs import helloworld
 from actinia_tiling_plugin.resources.templating import tplEnv
+from actinia_tiling_plugin.resources.processes import pctpl_to_pl
 
 
 class AsyncTilingProcessGridResource(ResourceBase):
@@ -155,18 +149,22 @@ class AsyncTilingProcessGrid(PersistentProcessing):
         ][0])
 
         # extract grid cells
-        tpl2 = tplEnv.get_template("pc_extract_grid.json")
-        pc2 = json.loads(tpl2.render(
-            grid_name=grid_name,
-            grid_prefix=grid_prefix,
-            n=num_grid_cells
-        ).replace('\n', '').replace(" ", ""))
-        pl2 = pconv.process_chain_to_process_list(pc2)
+        tpl_values2 = {
+            "grid_name": grid_name,
+            "grid_prefix": grid_prefix,
+            "n": num_grid_cells
+        }
+        pl2, _ = pctpl_to_pl("pc_extract_grid.json", tpl_values2)
+        # tpl2 = tplEnv.get_template("pc_extract_grid.json")
+        # pc2 = json.loads(tpl2.render(
+        #     grid_name=grid_name,
+        #     grid_prefix=grid_prefix,
+        #     n=num_grid_cells
+        # ).replace('\n', '').replace(" ", ""))
+        # pl2 = pconv.process_chain_to_process_list(pc2)
         self._execute_process_list(pl2)
 
         # delete grid
-        vect_mng = VectorLayerResource()
-        vect_mng.delete(self.location_name, self.mapset_name, grid_name)
         tpl3 = tplEnv.get_template("pc_delete_vector.json")
         pc3 = json.loads(tpl3.render(
             vector_name=grid_name
@@ -175,55 +173,9 @@ class AsyncTilingProcessGrid(PersistentProcessing):
         self._execute_process_list(pl3)
 
         # make response pretty
-        import pdb; pdb.set_trace()
-
-        # point_file = tempfile.NamedTemporaryFile(dir=self.temp_file_path, delete=True)
-        # result_file = tempfile.NamedTemporaryFile(dir=self.temp_file_path, delete=True)
-        #
-        # point_file.write(json_dumps(geojson).encode())
-        # point_file.flush()
-        #
-        # pc = dict()
-        # pc["1"] = {"module": "v.import",
-        #            "inputs": {"input": point_file.name},
-        #            "outputs": {"output": {"name": "input_points"}}}
-        #
-        # pc["2"] = {"module": "t.rast.sample",
-        #            "inputs": {"strds": "%s@%s" % (strds_name, self.mapset_name),
-        #                       "points": "input_points"},
-        #            "outputs": {"output": {"name": result_file.name}},
-        #            "flags": "rn",
-        #            "overwrite": True,
-        #            "verbose": True}
-        #
-        # self.request_data = pc
-        #
-        # # Run the process chain
-        # PersistentProcessing._execute(self, skip_permission_check=True)
-        #
-        # result = open(result_file.name, "r").readlines()
-        #
-        # output_list = []
-        # for line in result:
-        #     output_list.append(line.strip().split("|"))
-        #
-        # self.module_results = output_list
-        #
-        # point_file.close()
-        # result_file.close()
-
-# class TilingProcessGridResource(PersistentProcessing):
-#
-#     def __init__(self, *args):
-#         PersistentProcessing.__init__(self, *args)
-#         self.response_model_class = STRDSSampleGeoJSONResponseModel
-#
-#     def post(self, location_name, mapset_name):
-#         """Create a grid.
-#         """
-#
-#
-#     decorators = [log_api_call, auth.login_required]
+        self.module_results = list()
+        for cat in range(1, num_grid_cells + 1):
+            self.module_results.append(f"{grid_prefix}{cat}")
 
 
 # region ist vorher gesetzt

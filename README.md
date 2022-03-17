@@ -75,7 +75,7 @@ python3 setup.py test --addopts "-m 'dev'"
 ## Tiling Example
 ```
 actinia_base_url=http://localhost:8088/api/v2
-mapset_url=${actinia_base_url}/locations/loc_25832/mapsets/hpda_tiling_user2
+mapset_url=${actinia_base_url}/locations/loc_25832/mapsets/hpda_tiling_user9
 auth="actinia-gdi:actinia-gdi"
 
 curl -u ${auth} -X GET ${mapset_url}/info | jq
