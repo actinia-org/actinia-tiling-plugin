@@ -34,9 +34,10 @@ from actinia_core.rest.resource_base import ResourceBase
 from actinia_core.core.common.redis_interface import enqueue_job
 from actinia_core.core.common.process_chain import ProcessChainConverter
 
+from actinia_tiling_plugin.apidocs import tiling
 from actinia_tiling_plugin.apidocs import helloworld
 from actinia_tiling_plugin.resources.processes import pctpl_to_pl
-from actinia_tiling_plugin.model.response_models import GridTilingResponseModel
+from actinia_tiling_plugin.models.response_models import GridTilingResponseModel
 
 
 class AsyncTilingProcessGridResource(ResourceBase):
@@ -59,7 +60,8 @@ class AsyncTilingProcessGridResource(ResourceBase):
 
         return rdc
 
-    @swagger.doc(helloworld.describeHelloWorld_post_docs)
+    # @swagger.doc(helloworld.describeHelloWorld_post_docs)
+    @swagger.doc(tiling.grid_tiling_post_docs)
     def post(self, location_name, mapset_name):
         """Sample a strds by point coordinates, asynchronous call
         """

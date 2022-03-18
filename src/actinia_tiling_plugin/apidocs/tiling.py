@@ -25,44 +25,68 @@ __copyright__ = "Copyright 2022 mundialis GmbH & Co. KG"
 __maintainer__ = "mundialis GmbH % Co. KG"
 
 
-from actinia_tiling_plugin.model.response_models import (
+from actinia_core.models.response_models import ProcessingErrorResponseModel
+
+from actinia_tiling_plugin.models.response_models import (
     SimpleStatusCodeResponseModel,
+    GridTilingResponseModel,
 )
 
 
-describeHelloWorld_get_docs = {
-    # "summary" is taken from the description of the get method
-    "tags": ["example"],
-    "description": "Hello World example",
-    "responses": {
-        "200": {
-            "description": "This response returns the string 'Hello World!'",
-            "schema": SimpleStatusCodeResponseModel,
-        }
-    },
-}
+# describeHelloWorld_get_docs = {
+#     # "summary" is taken from the description of the get method
+#     "tags": ["example"],
+#     "description": "Hello World example",
+#     "responses": {
+#         "200": {
+#             "description": "This response returns the string 'Hello World!'",
+#             "schema": SimpleStatusCodeResponseModel,
+#         }
+#     },
+# }
 
+# class
 grid_tiling_post_docs = {
     # "summary" is taken from the description of the get method
-    "tags": ["tiling"],
-    "description": "Grid tiling",
+    "tags": ["Tiling"],
+    "description": "Creates grid tiles with a speciefied 'width' and 'height' "
+                   "in the current computational region. The created grids "
+                   "have the given 'grid_prefix' and will be listed in the "
+                   "'process_results'. "
+                   "Minimum required user role: user.",
+    "consumes": ["application/json"],
+    "parameters": [
+        {
+            "name": "width",
+            "description": "The width of one grid tile in map units.",
+            "required": True,
+            "in": "body",
+            "type": "string"
+        },
+        {
+            "name": "height",
+            "description": "The height of one grid tile in map units.",
+            "required": True,
+            "in": "body",
+            "type": "string"
+        },
+        {
+            "name": "grid_prefix",
+            "description": "The prefix of the grid tiles.",
+            "required": True,
+            "in": "body",
+            "type": "string"
+        }
+    ],
     "responses": {
         "200": {
-            "description": "",
-            "schema": SimpleStatusCodeResponseModel,
+            "description": "This response returns the processing response with"
+                           " the grid tile names in the 'processing_results'.",
+            "schema": GridTilingResponseModel
         },
         "400": {
             "description": "This response returns a detail error message",
-            "schema": {
-                "type": "object",
-                "properties": {
-                    "message": {
-                        "type": "string",
-                        "description": "detailed message",
-                        "example": "Missing name in JSON content",
-                    }
-                },
-            },
+            "schema": ProcessingErrorResponseModel
         },
     },
 }

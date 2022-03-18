@@ -30,7 +30,7 @@ from flask_restful_swagger_2 import swagger
 from flask_restful_swagger_2 import Resource
 
 from actinia_tiling_plugin.apidocs import helloworld
-from actinia_tiling_plugin.model.response_models import (
+from actinia_tiling_plugin.models.response_models import (
     SimpleStatusCodeResponseModel,
 )
 from actinia_tiling_plugin.core.example import transform_input

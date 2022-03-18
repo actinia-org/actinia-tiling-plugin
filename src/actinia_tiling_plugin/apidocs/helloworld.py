@@ -25,7 +25,7 @@ __copyright__ = "Copyright 2022 mundialis GmbH & Co. KG"
 __maintainer__ = "mundialis GmbH % Co. KG"
 
 
-from actinia_tiling_plugin.model.response_models import (
+from actinia_tiling_plugin.models.response_models import (
     SimpleStatusCodeResponseModel,
 )
 
