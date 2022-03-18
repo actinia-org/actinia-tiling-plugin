@@ -13,7 +13,8 @@
                          "value": "{{ vector_name }}"
                      }
                  ],
-                 "flags": "f"
+                 "flags": "f",
+                 "superquiet": true
             }
         ],
         "version": "1"
