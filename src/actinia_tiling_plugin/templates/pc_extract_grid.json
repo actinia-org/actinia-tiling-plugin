@@ -19,7 +19,8 @@
           "param": "output",
           "value": "{{ grid_prefix }}{{ cat }}"
         }
-      ]
+      ],
+      "superquiet": true
     }{{ "," if not loop.last }}
     {% endfor %}
   ],

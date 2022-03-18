@@ -24,7 +24,6 @@ __author__ = "Anika Weinmann"
 __copyright__ = "Copyright 2022 mundialis GmbH & Co. KG"
 __maintainer__ = "mundialis GmbH % Co. KG"
 
-import json
 from flask import make_response, jsonify
 from flask_restful_swagger_2 import swagger
 import pickle
@@ -33,13 +32,11 @@ from uuid import uuid4
 from actinia_core.rest.persistent_processing import PersistentProcessing
 from actinia_core.rest.resource_base import ResourceBase
 from actinia_core.core.common.redis_interface import enqueue_job
-
 from actinia_core.core.common.process_chain import ProcessChainConverter
 
-
 from actinia_tiling_plugin.apidocs import helloworld
-from actinia_tiling_plugin.resources.templating import tplEnv
 from actinia_tiling_plugin.resources.processes import pctpl_to_pl
+from actinia_tiling_plugin.model.response_models import GridTilingResponseModel
 
 
 class AsyncTilingProcessGridResource(ResourceBase):
@@ -55,10 +52,10 @@ class AsyncTilingProcessGridResource(ResourceBase):
             mapset_name=mapset_name,
         )
         if rdc:
-            # for debugging use the following to lines instead of enqueue_job
-            processing = AsyncTilingProcessGrid(rdc)
-            processing.run()
-            # enqueue_job(self.job_timeout, start_job, rdc)
+            # # for debugging use the following to lines instead of enqueue_job
+            # processing = AsyncTilingProcessGrid(rdc)
+            # processing.run()
+            enqueue_job(self.job_timeout, start_job, rdc)
 
         return rdc
 
@@ -85,8 +82,7 @@ class AsyncTilingProcessGrid(PersistentProcessing):
 
     def __init__(self, *args):
         PersistentProcessing.__init__(self, *args)
-        # TODO RESPONSEMODEL
-        # self.response_model_class = STRDSSampleGeoJSONResponseModel
+        self.response_model_class = GridTilingResponseModel
 
     def _execute_preparation(self):
 
