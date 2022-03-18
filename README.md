@@ -53,6 +53,7 @@ Otherwise you will get an error like this
 * If you make changes in code and nothing changes you can try to uninstall the plugin:
 ```
 pip3 uninstall actinia-tiling-plugin.wsgi -y
+rm -rf /usr/lib/python3.8/site-packages/actinia_tiling_plugin.wsgi-*.egg
 ```
 
 ### Running tests
