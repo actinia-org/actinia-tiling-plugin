@@ -25,13 +25,29 @@ __copyright__ = "Copyright 2022 mundialis GmbH & Co. KG"
 __maintainer__ = "mundialis GmbH % Co. KG"
 
 
-from actinia_core.models.response_models import ProcessingErrorResponseModel
+from actinia_core.models.response_models import (
+    ProcessingErrorResponseModel,
+)
 
 from actinia_tiling_plugin.models.response_models import (
     SimpleStatusCodeResponseModel,
     GridTilingResponseModel,
+    TilingListResponseModel,
 )
 
+
+tiling_list_get_docs = {
+    # "summary" is taken from the description of the get method
+    "tags": ["Tiling"],
+    "description": "Returns The list of the tiling processes.",
+    "responses": {
+        "200": {
+            "description": "This response returns list of the tiling "
+            "processes.",
+            "schema": TilingListResponseModel,
+        }
+    },
+}
 
 grid_tiling_get_docs = {
     # "summary" is taken from the description of the get method

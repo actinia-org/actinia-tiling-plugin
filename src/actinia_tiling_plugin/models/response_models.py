@@ -49,10 +49,67 @@ class SimpleStatusCodeResponseModel(Schema):
     required = ["status", "message"]
 
 
-simpleResponseExample = SimpleStatusCodeResponseModel(
-    status=200, message="success"
-)
-SimpleStatusCodeResponseModel.example = simpleResponseExample
+class TilingShortDescResponseModel(Schema):
+    """Response schema for short description of tiling processes."""
+    type = "object"
+    properties = {
+        "categories": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Categories of the process."
+        },
+        "description": {
+            "type": "string",
+            "description": "Description of the process."
+        },
+        "id": {
+            "type": "string",
+            "description": "ID of the process."
+        }
+    }
+    required = ["categories", "id", "description"]
+    example = {
+        "tiling_processes": [
+            {
+                "categories": ["Tiling"],
+                "description": "Creates grid tiles with a speciefied "
+                "'width' and 'height' in the current computational region."
+                " The created grids have the given 'grid_prefix' and will "
+                "be listed in the 'process_results'. Minimum required "
+                "user role: user.",
+                "id": "grid"
+            }
+        ]
+    }
+
+
+class TilingListResponseModel(Schema):
+    """Tiling process list reponse schema."""
+    type = "object"
+    properties = {
+        "tiling_processes": {
+            "type": "array",
+            "items": {"type": TilingShortDescResponseModel},
+            "description": "The list of all available tiling processes."
+        }
+    }
+    required = ["tiling_processes"]
+    example = [
+        {
+            "tiling_processes": [
+                {
+                    "categories": ["Tiling"],
+                    "description": "Creates grid tiles with a speciefied "
+                    "'width' and 'height' in the current computational region."
+                    " The created grids have the given 'grid_prefix' and will "
+                    "be listed in the 'process_results'. Minimum required "
+                    "user role: user.",
+                    "id": "grid"
+                }
+            ]
+        },
+        200
+    ]
 
 
 class GridTilingResponseModel(ProcessingResponseModel):

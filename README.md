@@ -65,21 +65,8 @@ docker run -it actinia-tiling-plugin-test -i
 
 cd /src/actinia-tiling-plugin/
 
-<!-- redis-server &
-sleep 1
-redis-cli ping -->
-
 # run all tests
-# python3 setup.py test
 make test
-
-# run only unittests
-python3 setup.py test --addopts "-m 'unittest'"
-# run only integrationtests
-python3 setup.py test --addopts "-m 'integrationtest'"
-
-# run only tests which are marked for development with the decorator '@pytest.mark.dev'
-python3 setup.py test --addopts "-m 'dev'"
 ```
 
 ## Tiling Example
