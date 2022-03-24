@@ -28,7 +28,7 @@ __maintainer__ = "mundialis GmbH % Co. KG"
 from copy import deepcopy
 from flask_restful_swagger_2 import Schema
 
-from actinia_core.core.common.app import URL_PREFIX
+from actinia_api import URL_PREFIX
 from actinia_core.models.response_models import ProcessingResponseModel
 
 

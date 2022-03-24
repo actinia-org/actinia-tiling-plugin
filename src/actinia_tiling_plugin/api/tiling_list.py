@@ -27,7 +27,7 @@ __maintainer__ = "mundialis GmbH % Co. KG"
 from copy import deepcopy
 from flask import jsonify, make_response
 from flask_restful_swagger_2 import swagger
-from actinia_core.rest.resource_base import ResourceBase
+from actinia_core.rest.base.resource_base import ResourceBase
 
 from actinia_tiling_plugin.apidocs import tiling
 from actinia_tiling_plugin.models.response_models import \
