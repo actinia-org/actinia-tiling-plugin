@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+""#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Copyright (c) 2018-present mundialis GmbH & Co. KG
@@ -25,16 +25,41 @@ __copyright__ = "Copyright 2022 mundialis GmbH & Co. KG"
 __maintainer__ = "mundialis GmbH % Co. KG"
 
 
-import json
 import pytest
 from flask import Response
 
-from actinia_core.core.common.app import URL_PREFIX
+from ..test_resource_base import URL_PREFIX
+from ..test_resource_base import ActiniaResourceTestCaseBase
 
-from ..testsuite import ActiniaTestCase
+# PC_SET_REGION = """{
+#   "list": [
+#     {
+#       "id": "set_region_for_epsg25832",
+#       "module": "g.region",
+#       "inputs": [
+#         {
+#           "param": "vector",
+#           "value": "boundary_county@PERMANENT"
+#         },
+#         {
+#           "param": "res",
+#           "value": "100000"
+#         }
+#       ],
+#       "flags": "a"
+#     }
+#   ],
+#   "version": "1"
+# }"""
+
+PC_TILING_GRID = """{
+  "width": "0.5",
+  "height": "0.5",
+  "grid_prefix": "grid"
+}"""
 
 
-class GridTilingTest(ActiniaTestCase):
+class GridTilingTest(ActiniaResourceTestCaseBase):
 
     location = "nc_spm_08"
     mapset = "tiling_test_mapset"
@@ -45,12 +70,12 @@ class GridTilingTest(ActiniaTestCase):
 
     def tearDown(self):
         if self.mapset_created is True:
-            rv = self.app.delete(
+            rv = self.server.delete(
                 URL_PREFIX + '/locations/%s/mapsets/%s/lock'
                              % (self.location, self.mapset),
                 headers=self.admin_auth_header)
             self.waitAsyncStatusAssertHTTP(rv, headers=self.admin_auth_header)
-            rv2 = self.app.delete(
+            rv2 = self.server.delete(
                 URL_PREFIX + '/locations/%s/mapsets/%s' % (self.location, self.mapset),
                 headers=self.admin_auth_header)
             self.waitAsyncStatusAssertHTTP(rv2, headers=self.admin_auth_header)
@@ -64,50 +89,60 @@ class GridTilingTest(ActiniaTestCase):
         # create mapset
         self.create_new_mapset(self.mapset, self.location)
 
-        url = f"{URL_PREFIX}/locations/{self.location}/mapsets"
-        resp = self.app.get(URL_PREFIX + "/locations", headers=self.user_auth_header)
-        import pdb; pdb.set_trace()
+        url = f"{self.base_url}/tiling_processes/grid"
+        resp = self.server.get(url, headers=self.user_auth_header)
 
-        # assert type(resp) is Response, "The response is not of type Response"
-        # assert resp.status_code == 200, "The status code is not 200"
-        # assert hasattr(resp, "json"), "The response has no attribute 'json'"
-        # assert "message" in resp.json, (
-        #     "There is no 'message' inside the " "response"
-        # )
-        # assert resp.json["message"] == "Hello world!", (
-        #     "The response message" " is wrong"
-        # )
+        assert type(resp) is Response, "The response is not of type Response"
+        assert resp.status_code == 200, "The status code is not 200"
+        assert "description" in resp.json, "No 'description' in response"
+        assert "parameters" in resp.json, "No 'parameters' in response"
+        assert "process_results" in resp.json, "No 'process_results' in response"
+        assert "tags" in resp.json, "No 'tags' in response"
+        assert resp.json["tags"] == ["Tiling"], "'tags' are wrong"
+        param_names = list()
+        for param in resp.json["parameters"]:
+            param_names.append(param["name"])
+        param_names.sort()
+        assert param_names == ["grid_prefix", "height", "width"], (
+            "Parameter names are wrong"
+        )
 
-    # @pytest.mark.integrationtest
-    # def test_post_helloworld(self):
-    #     """Test the post method of the /helloworld endpoint"""
-    #     postbody = {"name": "test"}
-    #     resp = self.app.post(
-    #         URL_PREFIX + "/helloworld",
-    #         headers=self.user_auth_header,
-    #         data=json.dumps(postbody),
-    #         content_type="application/json",
-    #     )
-    #     assert type(resp) is Response, "The response is not of type Response"
-    #     assert resp.status_code == 200, "The status code is not 200"
-    #     assert hasattr(resp, "json"), "The response has no attribute 'json'"
-    #     assert "message" in resp.json, (
-    #         "There is no 'message' inside the " "response"
-    #     )
-    #     assert resp.json["message"] == "Hello world TEST!", (
-    #         "The response " "message is wrong"
-    #     )
-    #
-    # @pytest.mark.integrationtest
-    # def test_post_helloworld_error(self):
-    #     """Test the post method of the /helloworld endpoint"""
-    #     postbody = {"namee": "test"}
-    #     resp = self.app.post(
-    #         URL_PREFIX + "/helloworld",
-    #         headers=self.user_auth_header,
-    #         data=json.dumps(postbody),
-    #         content_type="application/json",
-    #     )
-    #     assert type(resp) is Response, "The response is not of type Response"
-    #     assert resp.status_code == 400, "The status code is not 400"
-    #     assert resp.data == b"Missing name in JSON content"
+    @pytest.mark.integrationtest
+    def test_post_grid_apidocs(self):
+        """Test the post method of tiling grid endpoint"""
+        # create mapset
+        self.create_new_mapset(self.mapset, self.location)
+
+        # TODO setting the region does not work for me
+        # # set region (5x9 cells)
+        # rv = self.server.post(
+        #     f"{self.base_url}/processing_async",
+        #     headers=self.user_auth_header,
+        #     content_type=self.content_type,
+        #     data=PC_SET_REGION,
+        # )
+        # resp = self.waitAsyncStatusAssertHTTP(
+        #     rv,
+        #     headers=self.user_auth_header,
+        #     http_status=200,
+        #     status="finished",
+        # )
+        # url = f"{self.base_url}/info"
+        # resp = self.server.get(url, headers=self.user_auth_header)
+
+        # create grid
+        url = f"{self.base_url}/tiling_processes/grid"
+        rv2 = self.server.post(
+            url,
+            headers=self.user_auth_header,
+            content_type=self.content_type,
+            data=PC_TILING_GRID
+        )
+        resp2 = self.waitAsyncStatusAssertHTTP(
+            rv2,
+            headers=self.user_auth_header,
+            http_status=200,
+            status="finished",
+        )
+        assert "process_results" in resp2, "No 'process_results' in response"
+        assert resp2["process_results"] == ["grid1", "grid2", "grid3", "grid4"]
