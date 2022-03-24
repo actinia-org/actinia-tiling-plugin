@@ -59,10 +59,19 @@ rm -rf /usr/lib/python3.8/site-packages/actinia_tiling_plugin.wsgi-*.egg
 ### Running tests
 You can run the tests in the actinia docker:
 ```
+docker build -f docker/actinia-tiling-plugin-test/Dockerfile -t actinia-tiling-plugin-test .
+
+docker run -it actinia-tiling-plugin-test -i
+
 cd /src/actinia-tiling-plugin/
 
+<!-- redis-server &
+sleep 1
+redis-cli ping -->
+
 # run all tests
-python3 setup.py test
+# python3 setup.py test
+make test
 
 # run only unittests
 python3 setup.py test --addopts "-m 'unittest'"
@@ -76,9 +85,10 @@ python3 setup.py test --addopts "-m 'dev'"
 ## Tiling Example
 ```
 actinia_base_url=http://localhost:8088/api/v2
-mapset_url=${actinia_base_url}/locations/loc_25832/mapsets/hpda_tiling_user9
+mapset_url=${actinia_base_url}/locations/loc_25832/mapsets/hpda_tiling_user
 auth="actinia-gdi:actinia-gdi"
 
+curl -u ${auth} -X POST ${mapset_url} -H 'accept: application/json' -H 'Content-Type: application/json' -d @${json} | jq
 curl -u ${auth} -X GET ${mapset_url}/info | jq
 
 # grid tiling
@@ -89,5 +99,7 @@ curl -u ${auth} -X POST ${mapset_url}/processing_async -H 'accept: application/j
 json=test_postbodies/grid_tiling_pb.json
 curl -u ${auth} -X POST ${mapset_url}/tiling_processes/grid -H 'accept: application/json' -H 'Content-Type: application/json' -d @${json} | jq
 
+
+curl -u ${auth} -X GET ${mapset_url}/tiling_processes/grid | jq
 
 ```

@@ -33,17 +33,18 @@ from actinia_tiling_plugin.models.response_models import (
 )
 
 
-# describeHelloWorld_get_docs = {
-#     # "summary" is taken from the description of the get method
-#     "tags": ["example"],
-#     "description": "Hello World example",
-#     "responses": {
-#         "200": {
-#             "description": "This response returns the string 'Hello World!'",
-#             "schema": SimpleStatusCodeResponseModel,
-#         }
-#     },
-# }
+grid_tiling_get_docs = {
+    # "summary" is taken from the description of the get method
+    "tags": ["Tiling"],
+    "description": "Returns only the api description of the POST endpoint.",
+    "responses": {
+        "200": {
+            "description": "This response returns the api description of the "
+                           "POST endpoint.",
+            "schema": SimpleStatusCodeResponseModel,
+        }
+    },
+}
 
 # class
 grid_tiling_post_docs = {
@@ -61,21 +62,21 @@ grid_tiling_post_docs = {
             "description": "The width of one grid tile in map units.",
             "required": True,
             "in": "body",
-            "type": "string"
+            "schema": {"type": "string"}
         },
         {
             "name": "height",
             "description": "The height of one grid tile in map units.",
             "required": True,
             "in": "body",
-            "type": "string"
+            "schema": {"type": "string"}
         },
         {
             "name": "grid_prefix",
             "description": "The prefix of the grid tiles.",
             "required": True,
             "in": "body",
-            "type": "string"
+            "schema": {"type": "string"}
         }
     ],
     "responses": {

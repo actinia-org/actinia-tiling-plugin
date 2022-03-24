@@ -28,6 +28,7 @@ from flask import make_response, jsonify
 from flask_restful_swagger_2 import swagger
 import pickle
 from uuid import uuid4
+from copy import deepcopy
 
 from actinia_core.rest.persistent_processing import PersistentProcessing
 from actinia_core.rest.resource_base import ResourceBase
@@ -35,9 +36,9 @@ from actinia_core.core.common.redis_interface import enqueue_job
 from actinia_core.core.common.process_chain import ProcessChainConverter
 
 from actinia_tiling_plugin.apidocs import tiling
-from actinia_tiling_plugin.apidocs import helloworld
 from actinia_tiling_plugin.resources.processes import pctpl_to_pl
-from actinia_tiling_plugin.models.response_models import GridTilingResponseModel
+from actinia_tiling_plugin.models.response_models import \
+    GridTilingResponseModel
 
 
 class AsyncTilingProcessGridResource(ResourceBase):
@@ -60,17 +61,26 @@ class AsyncTilingProcessGridResource(ResourceBase):
 
         return rdc
 
-    # @swagger.doc(helloworld.describeHelloWorld_post_docs)
     @swagger.doc(tiling.grid_tiling_post_docs)
     def post(self, location_name, mapset_name):
-        """Sample a strds by point coordinates, asynchronous call
+        """Sample a strds by point coordinates, asynchronous call.
         """
         self._execute(location_name, mapset_name)
         html_code, response_model = pickle.loads(self.response_data)
         return make_response(jsonify(response_model), html_code)
 
-    # def get(self):
-    # TODO
+    @swagger.doc(tiling.grid_tiling_get_docs)
+    def get(self, location_name, mapset_name):
+        """Get description of the grid tiling process.
+        """
+        process_desc = deepcopy(tiling.grid_tiling_post_docs)
+        del process_desc["responses"]
+        process_desc["process_results"] = dict()
+        process_desc["process_results"]["type"] = "array"
+        process_desc["process_results"]["items"] = "string"
+        process_desc["process_results"]["description"] = \
+            "List of the vector names of the created grid tiles."
+        return make_response(jsonify(process_desc), 200)
 
 
 def start_job(*args):
@@ -163,19 +173,3 @@ class AsyncTilingProcessGrid(PersistentProcessing):
         self.module_results = list()
         for cat in range(1, num_grid_cells + 1):
             self.module_results.append(f"{grid_prefix}{cat}")
-
-
-# region ist vorher gesetzt
-# POSTBODY
-# {
-#   width: .., # in map unitx
-#   height: ..,
-#   output_prefix: ..,
-# }
-# RESP
-# [
-#   output_prefix1,
-#   output_prefix2,
-#   output_prefix3,
-#   ...
-# ]
