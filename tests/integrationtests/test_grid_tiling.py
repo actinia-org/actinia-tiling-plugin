@@ -1,4 +1,4 @@
-""#!/usr/bin/env python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Copyright (c) 2018-present mundialis GmbH & Co. KG
@@ -71,13 +71,17 @@ class GridTilingTest(ActiniaResourceTestCaseBase):
     def tearDown(self):
         if self.mapset_created is True:
             rv = self.server.delete(
-                URL_PREFIX + '/locations/%s/mapsets/%s/lock'
-                             % (self.location, self.mapset),
-                headers=self.admin_auth_header)
+                URL_PREFIX
+                + "/locations/%s/mapsets/%s/lock"
+                % (self.location, self.mapset),
+                headers=self.admin_auth_header,
+            )
             self.waitAsyncStatusAssertHTTP(rv, headers=self.admin_auth_header)
             rv2 = self.server.delete(
-                URL_PREFIX + '/locations/%s/mapsets/%s' % (self.location, self.mapset),
-                headers=self.admin_auth_header)
+                URL_PREFIX
+                + "/locations/%s/mapsets/%s" % (self.location, self.mapset),
+                headers=self.admin_auth_header,
+            )
             self.waitAsyncStatusAssertHTTP(rv2, headers=self.admin_auth_header)
         else:
             self.__class__.mapset_created = True
@@ -96,16 +100,20 @@ class GridTilingTest(ActiniaResourceTestCaseBase):
         assert resp.status_code == 200, "The status code is not 200"
         assert "description" in resp.json, "No 'description' in response"
         assert "parameters" in resp.json, "No 'parameters' in response"
-        assert "process_results" in resp.json, "No 'process_results' in response"
+        assert (
+            "process_results" in resp.json
+        ), "No 'process_results' in response"
         assert "tags" in resp.json, "No 'tags' in response"
         assert resp.json["tags"] == ["Tiling"], "'tags' are wrong"
         param_names = list()
         for param in resp.json["parameters"]:
             param_names.append(param["name"])
         param_names.sort()
-        assert param_names == ["grid_prefix", "height", "width"], (
-            "Parameter names are wrong"
-        )
+        assert param_names == [
+            "grid_prefix",
+            "height",
+            "width",
+        ], "Parameter names are wrong"
 
     @pytest.mark.integrationtest
     def test_post_grid_apidocs(self):
@@ -136,7 +144,7 @@ class GridTilingTest(ActiniaResourceTestCaseBase):
             url,
             headers=self.user_auth_header,
             content_type=self.content_type,
-            data=PC_TILING_GRID
+            data=PC_TILING_GRID,
         )
         resp2 = self.waitAsyncStatusAssertHTTP(
             rv2,
