@@ -14,7 +14,7 @@
       "stdout": {
         "id": "attrtable",
         "format": "list",
-        "delimiter": "|"}
+        "delimiter": "|"
       }
     }
   ],
