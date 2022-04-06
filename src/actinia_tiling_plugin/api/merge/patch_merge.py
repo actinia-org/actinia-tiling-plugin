@@ -150,11 +150,12 @@ class AsyncMergeProcessPatch(PersistentProcessing):
                         "raster": rast,
                     }
                     plr, _ = pctpl_to_pl(tpl, tpl_rpatch)
+                    import pdb; pdb.set_trace()
                     self._execute_process_list(plr)
             elif output["param"] == "vector":
                 vectors = output["value"].split(",")
                 for vect in vectors:
-                    tpl = "patch/pc_patch_raster.json"
+                    tpl = "patch/pc_patch_vector.json"
                     vectorlist = self._generate_name_mapset_str(
                         vect, mapsetlist)
                     tpl_vpatch = {
