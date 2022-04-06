@@ -66,7 +66,7 @@ grid_tiling_get_docs = {
 grid_tiling_post_docs = {
     # "summary" is taken from the description of the get method
     "tags": ["Tiling"],
-    "description": "Creates grid tiles with a speciefied 'width' and 'height' "
+    "description": "Creates grid tiles with a specified 'width' and 'height' "
                    "in the current computational region. The created grids "
                    "have the given 'grid_prefix' and will be listed in the "
                    "'process_results'. "
