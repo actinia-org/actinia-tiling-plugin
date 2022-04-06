@@ -1,7 +1,8 @@
 {
-  "mapsetlist": ["hpda_tiling_user_tmp1", "hpda_tiling_user_tmp2", "hpda_tiling_user_tmp3"],
+  "mapsetlist": ["hpda_tiling_usermapset_tmp1", "hpda_tiling_usermapset_tmp2", "hpda_tiling_usermapset_tmp3"],
   "outputs":[
     {"param": "raster", "value": "ndvi,ndwi"},
     {"param": "vector", "value": "points,areas"}
-  ]
+  ],
+  "keep_mapsets": true
 }

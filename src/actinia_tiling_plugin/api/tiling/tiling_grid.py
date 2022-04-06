@@ -135,6 +135,10 @@ class AsyncTilingProcessGrid(PersistentProcessing):
 
     def _execute(self):
 
+        grid_step_num = 2
+        post_step_num = 1
+        self.progress["step"] = grid_step_num + post_step_num
+
         self._execute_preparation()
         pconv = ProcessChainConverter()
 
@@ -153,6 +157,9 @@ class AsyncTilingProcessGrid(PersistentProcessing):
             info.split("=")[1] for info in grid_info
             if info.split("=")[0] == "centroids"
         ][0])
+        num_of_steps = grid_step_num
+        self.progress["num_of_steps"] = num_of_steps
+        self.progress["step"] = grid_step_num + post_step_num + num_grid_cells
 
         # extract grid cells
         grid_data = list()
@@ -170,6 +177,9 @@ class AsyncTilingProcessGrid(PersistentProcessing):
         }
         pl2, _ = pctpl_to_pl("pc_extract_grid.json", tpl_values2)
         self._execute_process_list(pl2)
+        num_of_steps += num_grid_cells
+        self.progress["num_of_steps"] = num_of_steps
+        self.progress["step"] = grid_step_num + post_step_num + num_grid_cells
 
         # delete grid
         tpl_values3 = {"vector_name": grid_name}
@@ -177,6 +187,9 @@ class AsyncTilingProcessGrid(PersistentProcessing):
         self._execute_process_list(pl3)
 
         self._execute_finalization()
+        num_of_steps += post_step_num
+        self.progress["num_of_steps"] = num_of_steps
+        self.progress["step"] = grid_step_num + post_step_num + num_grid_cells
 
         # make response pretty
         self.module_results = list()

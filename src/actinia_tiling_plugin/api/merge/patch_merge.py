@@ -35,6 +35,12 @@ from actinia_core.processing.actinia_processing.ephemeral.\
 from actinia_core.rest.base.resource_base import ResourceBase
 from actinia_core.core.common.redis_interface import enqueue_job
 from actinia_core.core.common.process_chain import ProcessChainConverter
+from actinia_core.processing.actinia_processing.persistent.mapset_management \
+    import (
+        PersistentMapsetDeleter,
+        PersistentMapsetUnlocker,
+)
+
 
 from actinia_tiling_plugin.apidocs import tiling
 from actinia_tiling_plugin.resources.processes import pctpl_to_pl
@@ -97,7 +103,6 @@ class AsyncMergeProcessPatch(PersistentProcessing):
         if self.target_mapset_exists is False:
             # Create the temp database and link the
             # required mapsets into it
-            import pdb; pdb.set_trace()
             self._create_temp_database(self.required_mapsets)
 
             # Initialize the GRASS environment and switch into PERMANENT
@@ -120,6 +125,12 @@ class AsyncMergeProcessPatch(PersistentProcessing):
                 source_mapset_name=self.target_mapset_name)
             self._lock_temp_mapset()
 
+
+
+    # def _delete_mapset(self, mapset_name):
+
+
+
     def _execute_finalization(self):
         # Copy local mapset to original location, merge mapsets
         self._copy_merge_tmp_mapset_to_target_mapset()
@@ -134,6 +145,7 @@ class AsyncMergeProcessPatch(PersistentProcessing):
 
         mapsetlist = self.request_data["mapsetlist"]
         outputs = self.request_data["outputs"]
+        keep_mapsets = self.request_data["keep_mapsets"]
         self.required_mapsets.extend(mapsetlist)
 
         self._execute_preparation()
@@ -156,10 +168,18 @@ class AsyncMergeProcessPatch(PersistentProcessing):
             elif output["param"] == "vector":
                 vectors = output["value"].split(",")
                 for vect in vectors:
+                    tpl_check = "patch/pc_vector_check_attrtable.json"
+                    tpl_check_val = {"map": vect}
+                    plcheck, _ = pctpl_to_pl(tpl_check, tpl_check_val)
+                    self._execute_process_list(plcheck)
+                    self._parse_module_outputs()
+                    attrcheck = self.module_results["attrtable"]
+                    import pdb; pdb.set_trace()
+
                     tpl = "patch/pc_patch_vector.json"
                     vectorlist = self._generate_name_mapset_str(
                         vect, mapsetlist)
-                    # TODO check for attribute table
+                    # TODO check for attribute table: v.db.connect -p` oder `v.db.connect -g
                     tpl_vpatch = {
                         "vectorlist": vectorlist,
                         "vector": vect,
@@ -168,47 +188,24 @@ class AsyncMergeProcessPatch(PersistentProcessing):
                     plv, _ = pctpl_to_pl(tpl, tpl_vpatch)
                     self._execute_process_list(plv)
 
+            # TODO STRDS + STVDS
+
             # else:
-            #
+            # TODO not yet supported
 
+        # delete temporary mapsets
+        if keep_mapsets is not True:
+            for mapset_name in mapsetlist:
+                rdc_delete = deepcopy(self.rdc)
+                rdc_delete.mapset_name = mapset_name
+                import pdb; pdb.set_trace()
+                unlocker = PersistentMapsetUnlocker(rdc_delete)
+                unlocker._execute()
+                mapset_deleter = PersistentMapsetDeleter(rdc_delete)
+                mapset_deleter._execute()
 
-        import pdb; pdb.set_trace()
+        self._execute_finalization()
 
-
-
-
-        # # v.mkgrid with output map and box
-        # req_data_orig = self.request_data
-        # grid_prefix = req_data_orig["grid_prefix"]
-        # grid_name = f"grid_{uuid4().hex}"
-        # box = f"{req_data_orig['width']},{req_data_orig['height']}"
-        # tpl_values1 = {"grid_name": grid_name, "box": box}
-        # pl1, pconv = pctpl_to_pl("pc_create_grid.json", tpl_values1)
-        # self.output_parser_list = pconv.output_parser_list
-        # self._execute_process_list(pl1)
-        # self._parse_module_outputs()
-        # grid_info = self.module_results["grid_info"]
-        # num_grid_cells = int([
-        #     info.split("=")[1] for info in grid_info
-        #     if info.split("=")[0] == "centroids"
-        # ][0])
-        #
-        # # extract grid cells
-        # tpl_values2 = {
-        #     "grid_name": grid_name,
-        #     "grid_prefix": grid_prefix,
-        #     "n": num_grid_cells
-        # }
-        # pl2, _ = pctpl_to_pl("pc_extract_grid.json", tpl_values2)
-        # self._execute_process_list(pl2)
-        #
-        # # delete grid
-        # tpl_values3 = {"vector_name": grid_name}
-        # pl3, _ = pctpl_to_pl("pc_delete_vector.json", tpl_values3)
-        # self._execute_process_list(pl3)
-        #
-        # self._execute_finalization()
-        #
         # # make response pretty
         # self.module_results = list()
         # for cat in range(1, num_grid_cells + 1):

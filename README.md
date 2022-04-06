@@ -64,7 +64,7 @@ make test
 ## Small Example
 ```
 actinia_base_url=http://localhost:8088/api/v3
-mapset_url=${actinia_base_url}/locations/loc_25832/mapsets/hpda_tiling_user
+mapset_url=${actinia_base_url}/locations/loc_25832/mapsets/hpda_tiling_usermapset
 auth="actinia-gdi:actinia-gdi"
 ```
 
@@ -111,6 +111,9 @@ curl -u ${auth} -X GET  "http://localhost:8088/api/v3/resources/actinia-gdi/reso
 ```
 json=test_postbodies/patch_merge.json
 curl -u ${auth} -X POST ${mapset_url}/merge_processes/patch -H 'accept: application/json' -H 'Content-Type: application/json' -d @${json} | jq
+curl -u ${auth} -X GET ${mapset_url}/vector_layers | jq
+curl -u ${auth} -X GET ${mapset_url}/raster_layers | jq
+
 ```
 
 
