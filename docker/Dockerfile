@@ -1,4 +1,4 @@
-FROM mundialis/actinia-core:g79-latest-alpine
+FROM mundialis/actinia-core:latest
 
 # pwgen is needed for the tests
 RUN pip3 install pwgen
