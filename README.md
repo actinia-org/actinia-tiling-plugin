@@ -20,14 +20,6 @@ docker network prune
 docker-compose -f docker/docker-compose.yml up -d
 ```
 
-### Requesting helloworld endpoint
-You can test the plugin and request the `/helloworld` endpoint, e.g. with:
-```
-curl -u actinia-gdi:actinia-gdi -X GET http://localhost:8088/api/v2/helloworld | jq
-
-curl -u actinia-gdi:actinia-gdi -H 'accept: application/json' -H 'Content-Type: application/json' -X POST http://localhost:8088/api/v2/helloworld -d '{"name": "test"}' | jq
-```
-
 ## DEV setup
 For a DEV setup you can use the docker/docker-compose.yml:
 ```
@@ -69,24 +61,42 @@ cd /src/actinia-tiling-plugin/
 make test
 ```
 
-## Tiling Example
+## Small Example
+
+### Grid Tiling Example
 ```
-actinia_base_url=http://localhost:8088/api/v2
+actinia_base_url=http://localhost:8088/api/v3
 mapset_url=${actinia_base_url}/locations/loc_25832/mapsets/hpda_tiling_user
 auth="actinia-gdi:actinia-gdi"
-
-curl -u ${auth} -X POST ${mapset_url} -H 'accept: application/json' -H 'Content-Type: application/json' -d @${json} | jq
-curl -u ${auth} -X GET ${mapset_url}/info | jq
 
 # grid tiling
 # the region should be set correctly
 json_reg=test_postbodies/set_region_for_epsg25832.json
 curl -u ${auth} -X POST ${mapset_url}/processing_async -H 'accept: application/json' -H 'Content-Type: application/json' -d @${json_reg} | jq
+curl -u ${auth} -X GET ${mapset_url}/info | jq
 
+# create tiling grid
+curl -u ${auth} -X GET ${mapset_url}/vector_layers | jq
 json=test_postbodies/grid_tiling_pb.json
 curl -u ${auth} -X POST ${mapset_url}/tiling_processes/grid -H 'accept: application/json' -H 'Content-Type: application/json' -d @${json} | jq
+curl -u ${auth} -X GET ${mapset_url}/vector_layers | jq
 
-
+# request tiling_processes
+curl -u ${auth} -X GET ${mapset_url}/tiling_processes | jq
 curl -u ${auth} -X GET ${mapset_url}/tiling_processes/grid | jq
-
 ```
+
+### Processing Example as prepartation for the merge
+
+
+
+
+
+### Patch merge Example
+
+
+
+
+## TODO
+* zero Padding
+* Region statt Vector speichern (wie res setzen?)

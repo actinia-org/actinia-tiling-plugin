@@ -30,9 +30,8 @@ import pickle
 from uuid import uuid4
 from copy import deepcopy
 
-from actinia_core.processing.actinia_processing.ephemeral.\
-    persistent_processing import PersistentProcessing
-from actinia_core.rest.base.resource_base import ResourceBase
+from actinia_core.rest.persistent_processing import PersistentProcessing
+from actinia_core.rest.resource_base import ResourceBase
 from actinia_core.core.common.redis_interface import enqueue_job
 from actinia_core.core.common.process_chain import ProcessChainConverter
 
@@ -43,7 +42,7 @@ from actinia_tiling_plugin.models.response_models import \
 
 
 class AsyncTilingProcessGridResource(ResourceBase):
-    """Sample a STRDS at vector point locations, asynchronous call
+    """Create grid tiles.
     """
 
     def _execute(self, location_name, mapset_name):
@@ -64,7 +63,7 @@ class AsyncTilingProcessGridResource(ResourceBase):
 
     @swagger.doc(tiling.grid_tiling_post_docs)
     def post(self, location_name, mapset_name):
-        """Sample a strds by point coordinates, asynchronous call.
+        """Create grid tiles.
         """
         self._execute(location_name, mapset_name)
         html_code, response_model = pickle.loads(self.response_data)
@@ -155,10 +154,18 @@ class AsyncTilingProcessGrid(PersistentProcessing):
         ][0])
 
         # extract grid cells
+        grid_data = list()
+        zp_len = len(str(num_grid_cells))
+        text = "{:0%s}" % zp_len
+        grid_data = [
+            {"cat": cat, "zeropaddedcat": text.format(cat)}
+            for cat in range(1, num_grid_cells + 1)
+        ]
         tpl_values2 = {
             "grid_name": grid_name,
             "grid_prefix": grid_prefix,
-            "n": num_grid_cells
+            "data": grid_data,
+            # "n": num_grid_cells,
         }
         pl2, _ = pctpl_to_pl("pc_extract_grid.json", tpl_values2)
         self._execute_process_list(pl2)
@@ -172,5 +179,5 @@ class AsyncTilingProcessGrid(PersistentProcessing):
 
         # make response pretty
         self.module_results = list()
-        for cat in range(1, num_grid_cells + 1):
-            self.module_results.append(f"{grid_prefix}{cat}")
+        for val in grid_data:
+            self.module_results.append(f"{grid_prefix}{val['zeropaddedcat']}")
