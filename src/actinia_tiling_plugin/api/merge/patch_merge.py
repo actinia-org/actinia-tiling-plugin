@@ -97,6 +97,7 @@ class AsyncMergeProcessPatch(PersistentProcessing):
         if self.target_mapset_exists is False:
             # Create the temp database and link the
             # required mapsets into it
+            import pdb; pdb.set_trace()
             self._create_temp_database(self.required_mapsets)
 
             # Initialize the GRASS environment and switch into PERMANENT
@@ -131,11 +132,12 @@ class AsyncMergeProcessPatch(PersistentProcessing):
 
     def _execute(self):
 
-        self._execute_preparation()
-        pconv = ProcessChainConverter()
-
         mapsetlist = self.request_data["mapsetlist"]
         outputs = self.request_data["outputs"]
+        self.required_mapsets.extend(mapsetlist)
+
+        self._execute_preparation()
+        pconv = ProcessChainConverter()
 
         # patch the output maps
         for output in outputs:
@@ -150,7 +152,6 @@ class AsyncMergeProcessPatch(PersistentProcessing):
                         "raster": rast,
                     }
                     plr, _ = pctpl_to_pl(tpl, tpl_rpatch)
-                    import pdb; pdb.set_trace()
                     self._execute_process_list(plr)
             elif output["param"] == "vector":
                 vectors = output["value"].split(",")
@@ -158,9 +159,11 @@ class AsyncMergeProcessPatch(PersistentProcessing):
                     tpl = "patch/pc_patch_vector.json"
                     vectorlist = self._generate_name_mapset_str(
                         vect, mapsetlist)
+                    # TODO check for attribute table
                     tpl_vpatch = {
                         "vectorlist": vectorlist,
                         "vector": vect,
+                        "attributetable": False,
                     }
                     plv, _ = pctpl_to_pl(tpl, tpl_vpatch)
                     self._execute_process_list(plv)

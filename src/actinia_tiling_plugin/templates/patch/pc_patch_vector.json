@@ -26,8 +26,8 @@
           "param": "output",
           "value": "{{ vector }}"
         }
-      ],
-      "flags": "e"
+      ]{% if attributetable is sameas true %},
+      "flags": "e"{% endif %}
     }
   ],
   "version": "1"
