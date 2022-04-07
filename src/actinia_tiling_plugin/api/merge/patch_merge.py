@@ -27,7 +27,6 @@ __maintainer__ = "mundialis GmbH % Co. KG"
 from flask import make_response, jsonify
 from flask_restful_swagger_2 import swagger
 import pickle
-from uuid import uuid4
 from copy import deepcopy
 
 from actinia_core.processing.actinia_processing.ephemeral.\
@@ -41,11 +40,11 @@ from actinia_core.processing.actinia_processing.persistent.mapset_management \
         PersistentMapsetUnlocker,
 )
 
-
-from actinia_tiling_plugin.apidocs import tiling
+from actinia_tiling_plugin.apidocs import merge
 from actinia_tiling_plugin.resources.processes import pctpl_to_pl
-from actinia_tiling_plugin.models.response_models import \
+from actinia_tiling_plugin.models.response_models.tiling import \
     GridTilingResponseModel
+from actinia_tiling_plugin.resources.logging import log
 
 
 class AsyncMergeProcessPatchResource(ResourceBase):
@@ -69,8 +68,7 @@ class AsyncMergeProcessPatchResource(ResourceBase):
 
         return rdc
 
-    # TODO
-    @swagger.doc(tiling.grid_tiling_post_docs)
+    @swagger.doc(merge.patch_merge_post_docs)
     def post(self, location_name, mapset_name):
         """Merging mapsets with same raster, vector, ... maps in one mapset by
         patching the maps.
@@ -78,6 +76,26 @@ class AsyncMergeProcessPatchResource(ResourceBase):
         self._execute(location_name, mapset_name)
         html_code, response_model = pickle.loads(self.response_data)
         return make_response(jsonify(response_model), html_code)
+
+    @swagger.doc(merge.patch_merge_get_docs)
+    def get(self, location_name, mapset_name):
+        """Get description of the patch merge process.
+        """
+        process_desc = deepcopy(merge.patch_merge_post_docs)
+        del process_desc["responses"]
+
+        io_parameter_base_schema = dict()
+        io_parameter_base_schema["type"] = "array"
+        io_parameter_base_schema["items"] = "object with properties 'param' "\
+            "and 'value'."
+        del process_desc["parameters"][1]["schema"]
+        process_desc["parameters"][1]["schema"] = io_parameter_base_schema
+        process_desc["parameters"][1]["description"] = (
+            "A list of data to patch in the new mapset. The 'param' must "
+            "be on of 'vector', 'raster' or 'strds' and the 'value' is a "
+            "string of the maps which should be pateched."
+        )
+        return make_response(jsonify(process_desc), 200)
 
 
 def start_job(*args):
@@ -92,6 +110,33 @@ class AsyncMergeProcessPatch(PersistentProcessing):
     def __init__(self, *args):
         PersistentProcessing.__init__(self, *args)
         self.response_model_class = GridTilingResponseModel
+        self.num_of_steps = 0
+        self.num_steps = {
+            "raster": 2,
+            "vector": 3,
+            "strds": 0,
+            "stvds": 0,
+        }
+        self.step = 0
+        self.raster_maps = list()
+        self.vector_maps = list()
+        self.strds = list()
+        self.stvds = list()
+        for output in self.request_data["outputs"]:
+            if output["param"] == "raster":
+                self.raster_maps = output["value"].split(",")
+            elif output["param"] == "vector":
+                self.vector_maps = output["value"].split(",")
+            # elif output["param"] == "strds":
+            #     self.strds = output["value"].split(",")
+            # elif output["param"] == "stvds":
+            #     self.stvds = output["value"].split(",")
+            else:
+                log.info(f"Output type '{output['param']}' not yet supported!")
+            self.step += (
+                self.num_steps[output["param"]] * len(output["value"].split(","))
+            )
+        self.mapsetlist = self.request_data["mapsetlist"]
 
     def _execute_preparation(self):
 
@@ -125,68 +170,88 @@ class AsyncMergeProcessPatch(PersistentProcessing):
                 source_mapset_name=self.target_mapset_name)
             self._lock_temp_mapset()
 
-
-
-    # def _delete_mapset(self, mapset_name):
-
-
-
     def _execute_finalization(self):
         # Copy local mapset to original location, merge mapsets
         self._copy_merge_tmp_mapset_to_target_mapset()
 
-    def _generate_name_mapset_str(self, name, mapsetlist):
+    def _generate_name_mapset_str(self, name):
         name_list = list()
-        for mapset in mapsetlist:
+        for mapset in self.mapsetlist:
             name_list.append(f"{name}@{mapset}")
         return ",".join(name_list)
 
+    def _set_progress(self):
+        self.progress["step"] = self.step
+        self.progress["num_of_steps"] = self.num_of_steps
+
+    def _delete_mapset(self, mapset_name):
+        if mapset_name != "PERMANENT":
+            rdc_delete = deepcopy(self.rdc)
+            rdc_delete.mapset_name = mapset_name
+            unlocker = PersistentMapsetUnlocker(rdc_delete)
+            unlocker._execute()
+            mapset_deleter = PersistentMapsetDeleter(rdc_delete)
+            mapset_deleter._execute()
+
+    def _patch_raster(self, rast):
+        # patch raster map
+        tpl = "patch/pc_patch_raster.json"
+        rasterlist = self._generate_name_mapset_str(rast)
+        tpl_rpatch = {
+            "rasterlist": rasterlist,
+            "raster": rast,
+        }
+        plr, _ = pctpl_to_pl(tpl, tpl_rpatch)
+        self._execute_process_list(plr)
+        self.num_of_steps += self.num_steps["raster"]
+        self._set_progress()
+
+    def _patch_vector(self, vect):
+        # check for attribute table
+        tpl_check = "patch/pc_vector_check_attrtable.json"
+        tpl_check_val = {"map": vect}
+        plcheck, pconv = pctpl_to_pl(tpl_check, tpl_check_val)
+        self.output_parser_list = pconv.output_parser_list
+        self._execute_process_list(plcheck)
+        self._parse_module_outputs()
+        attrcheck = self.module_results["attrtable"]
+        attributetable = False if attrcheck[0] == "" else True
+        # patch vector maps
+        tpl = "patch/pc_patch_vector.json"
+        vectorlist = self._generate_name_mapset_str(vect)
+        tpl_vpatch = {
+            "vectorlist": vectorlist,
+            "vector": vect,
+            "attributetable": attributetable,
+        }
+        plv, _ = pctpl_to_pl(tpl, tpl_vpatch)
+        self._execute_process_list(plv)
+        self.num_of_steps += self.num_steps["vector"]
+        self._set_progress()
+
+
     def _execute(self):
 
-        mapsetlist = self.request_data["mapsetlist"]
         outputs = self.request_data["outputs"]
         keep_mapsets = self.request_data["keep_mapsets"]
-        self.required_mapsets.extend(mapsetlist)
+        self.required_mapsets.extend(self.mapsetlist)
 
         self._execute_preparation()
         pconv = ProcessChainConverter()
+
+        self._set_progress()
 
         # patch the output maps
         for output in outputs:
             if output["param"] == "raster":
                 rasters = output["value"].split(",")
                 for rast in rasters:
-                    tpl = "patch/pc_patch_raster.json"
-                    rasterlist = self._generate_name_mapset_str(
-                        rast, mapsetlist)
-                    tpl_rpatch = {
-                        "rasterlist": rasterlist,
-                        "raster": rast,
-                    }
-                    plr, _ = pctpl_to_pl(tpl, tpl_rpatch)
-                    self._execute_process_list(plr)
+                    self._patch_raster(rast)
+
             elif output["param"] == "vector":
                 vectors = output["value"].split(",")
                 for vect in vectors:
-                    tpl_check = "patch/pc_vector_check_attrtable.json"
-                    tpl_check_val = {"map": vect}
-                    plcheck, _ = pctpl_to_pl(tpl_check, tpl_check_val)
-                    self._execute_process_list(plcheck)
-                    self._parse_module_outputs()
-                    attrcheck = self.module_results["attrtable"]
-                    import pdb; pdb.set_trace()
-
-                    tpl = "patch/pc_patch_vector.json"
-                    vectorlist = self._generate_name_mapset_str(
-                        vect, mapsetlist)
-                    # TODO check for attribute table: v.db.connect -p` oder `v.db.connect -g
-                    tpl_vpatch = {
-                        "vectorlist": vectorlist,
-                        "vector": vect,
-                        "attributetable": False,
-                    }
-                    plv, _ = pctpl_to_pl(tpl, tpl_vpatch)
-                    self._execute_process_list(plv)
+                    self._patch_vector(vect)
 
             # TODO STRDS + STVDS
 
@@ -195,14 +260,8 @@ class AsyncMergeProcessPatch(PersistentProcessing):
 
         # delete temporary mapsets
         if keep_mapsets is not True:
-            for mapset_name in mapsetlist:
-                rdc_delete = deepcopy(self.rdc)
-                rdc_delete.mapset_name = mapset_name
-                import pdb; pdb.set_trace()
-                unlocker = PersistentMapsetUnlocker(rdc_delete)
-                unlocker._execute()
-                mapset_deleter = PersistentMapsetDeleter(rdc_delete)
-                mapset_deleter._execute()
+            for mapset_name in self.mapsetlist:
+                self._delete_mapset(mapset_name)
 
         self._execute_finalization()
 

@@ -16,7 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-Tiling list class
+Merge list class
 """
 
 __license__ = "GPLv3"
@@ -29,28 +29,28 @@ from flask import jsonify, make_response
 from flask_restful_swagger_2 import swagger
 from actinia_core.rest.base.resource_base import ResourceBase
 
-from actinia_tiling_plugin.apidocs import tiling
-from actinia_tiling_plugin.models.response_models.tiling import \
-    TilingListResponseModel
+from actinia_tiling_plugin.apidocs import merge
+from actinia_tiling_plugin.models.response_models.merge import \
+    MergeListResponseModel
 
 
-class TilingListResource(ResourceBase):
-    """Returns a list of all tiling prcesses"""
+class MergeListResource(ResourceBase):
+    """Returns a list of all merge prcesses"""
 
-    @swagger.doc(tiling.tiling_list_get_docs)
+    @swagger.doc(merge.merge_list_get_docs)
     def get(self, location_name, mapset_name):
-        """Returns a list of all tiling prcesses"""
+        """Returns a list of all merge prcesses"""
 
-        grid_doc = tiling.grid_tiling_post_docs
-        tiling_docs = [("grid", grid_doc)]
+        patch_doc = merge.patch_merge_post_docs
+        merge_docs = [("patch", patch_doc)]
 
-        tiling_processes = list()
-        for (t_name, t_doc) in tiling_docs:
-            t_desc = dict()
-            t_desc["categories"] = deepcopy(t_doc["tags"])
-            t_desc["description"] = deepcopy(t_doc["description"])
-            t_desc["id"] = deepcopy(t_name)
-            tiling_processes.append(t_desc)
+        merge_processes = list()
+        for (m_name, m_doc) in merge_docs:
+            m_desc = dict()
+            m_desc["categories"] = deepcopy(m_doc["tags"])
+            m_desc["description"] = deepcopy(m_doc["description"])
+            m_desc["id"] = deepcopy(m_name)
+            merge_processes.append(m_desc)
 
-        return make_response(jsonify(TilingListResponseModel(
-            tiling_processes=tiling_processes), 200))
+        return make_response(jsonify(MergeListResponseModel(
+            merge_processes=merge_processes), 200))

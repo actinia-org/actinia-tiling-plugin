@@ -32,23 +32,6 @@ from actinia_api import URL_PREFIX
 from actinia_core.models.response_models import ProcessingResponseModel
 
 
-class SimpleStatusCodeResponseModel(Schema):
-    """Simple response schema to inform about status."""
-
-    type = "object"
-    properties = {
-        "status": {
-            "type": "number",
-            "description": "The status code of the request.",
-        },
-        "message": {
-            "type": "string",
-            "description": "A short message to describes the status",
-        },
-    }
-    required = ["status", "message"]
-
-
 class TilingShortDescResponseModel(Schema):
     """Response schema for short description of tiling processes."""
     type = "object"

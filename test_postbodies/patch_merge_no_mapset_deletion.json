@@ -4,5 +4,5 @@
     {"param": "raster", "value": "ndvi,ndwi"},
     {"param": "vector", "value": "points,areas"}
   ],
-  "keep_mapsets": false
+  "keep_mapsets": true
 }

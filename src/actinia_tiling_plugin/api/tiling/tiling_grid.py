@@ -38,7 +38,7 @@ from actinia_core.core.common.process_chain import ProcessChainConverter
 
 from actinia_tiling_plugin.apidocs import tiling
 from actinia_tiling_plugin.resources.processes import pctpl_to_pl
-from actinia_tiling_plugin.models.response_models import \
+from actinia_tiling_plugin.models.response_models.tiling import \
     GridTilingResponseModel
 
 
