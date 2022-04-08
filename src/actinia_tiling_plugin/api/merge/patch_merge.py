@@ -48,7 +48,7 @@ from actinia_tiling_plugin.resources.logging import log
 
 
 class AsyncMergeProcessPatchResource(ResourceBase):
-    """Merging mapsets with same raster, vector, ... maps in one mapset by
+    """Merging mapsets with same raster, vector maps and strds in one mapset by
     patching the maps.
     """
 
@@ -61,10 +61,10 @@ class AsyncMergeProcessPatchResource(ResourceBase):
             mapset_name=mapset_name,
         )
         if rdc:
-            # for debugging use the following to lines instead of enqueue_job
-            processing = AsyncMergeProcessPatch(rdc)
-            processing.run()
-            # enqueue_job(self.job_timeout, start_job, rdc)
+            # # for debugging use the following to lines instead of enqueue_job
+            # processing = AsyncMergeProcessPatch(rdc)
+            # processing.run()
+            enqueue_job(self.job_timeout, start_job, rdc)
 
         return rdc
 
