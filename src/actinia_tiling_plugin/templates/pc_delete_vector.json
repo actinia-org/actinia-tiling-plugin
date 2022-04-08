@@ -1,0 +1,21 @@
+{
+        "list": [
+            {
+                 "id": "delete_vector",
+                 "module": "g.remove",
+                 "inputs": [
+                     {
+                         "param": "type",
+                         "value": "vector"
+                     },
+                     {
+                         "param": "name",
+                         "value": "{{ vector_name }}"
+                     }
+                 ],
+                 "flags": "f",
+                 "superquiet": true
+            }
+        ],
+        "version": "1"
+    }

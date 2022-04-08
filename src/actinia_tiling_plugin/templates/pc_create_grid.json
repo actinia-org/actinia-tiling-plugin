@@ -1,0 +1,37 @@
+{
+        "list": [
+            {
+                 "id": "create_grid",
+                 "module": "v.mkgrid",
+                 "inputs": [
+                     {
+                         "param": "box",
+                         "value": "{{ box }}"
+                     }
+                 ],
+                 "outputs": [
+                     {
+                         "param": "map",
+                         "value": "{{ grid_name }}"
+                     }
+                 ],
+                 "superquiet": true
+            },
+            {
+                 "id": "grid_info",
+                 "module": "v.info",
+                 "inputs": [
+                     {
+                         "param": "map",
+                         "value": "{{ grid_name }}"
+                     }
+                 ],
+                 "flags": "t",
+                 "stdout": {
+                    "id": "grid_info",
+                    "format": "list",
+                    "delimiter": "|"}
+            }
+        ],
+        "version": "1"
+    }

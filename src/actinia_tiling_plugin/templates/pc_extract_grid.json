@@ -1,0 +1,28 @@
+{
+  "list": [
+    {% for val in data %}
+    {
+      "id": "",
+      "module": "v.extract",
+      "inputs": [
+        {
+          "param": "input",
+          "value": "{{ grid_name }}"
+        },
+        {
+          "param": "cat",
+          "value": "{{ val.cat }}"
+        }
+      ],
+      "outputs": [
+        {
+          "param": "output",
+          "value": "{{ grid_prefix }}{{ val.zeropaddedcat }}"
+        }
+      ],
+      "superquiet": true
+    }{{ "," if not loop.last }}
+    {% endfor %}
+  ],
+  "version": "1"
+}

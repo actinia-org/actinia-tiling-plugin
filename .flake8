@@ -7,3 +7,4 @@ exclude = .git,.pycache,build,.eggs
 
 per-file-ignores =
     ./src/actinia_tiling_plugin/wsgi.py: F401
+    ./tests/test_resource_base.py: F401

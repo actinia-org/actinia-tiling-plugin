@@ -1,4 +1,4 @@
-FROM mundialis/actinia-core:3.0.0 as actinia_test
+FROM mundialis/actinia-core:latest as actinia_test
 
 LABEL authors="Carmen Tawalika,Anika Weinmann"
 LABEL maintainer="tawalika@mundialis.de,weinmann@mundialis.de"
@@ -16,6 +16,13 @@ RUN pip3 install iniconfig colorlog pwgen
 
 ENTRYPOINT ["/bin/sh"]
 CMD ["/src/start.sh"]
+
+# add data for tests
+RUN wget --quiet https://grass.osgeo.org/sampledata/north_carolina/nc_spm_08_micro.zip && \
+  unzip nc_spm_08_micro.zip && \
+  rm -f nc_spm_08_micro.zip && \
+  mv nc_spm_08_micro /actinia_core/grassdb/nc_spm_08
+RUN grass -e -c 'EPSG:4326' /actinia_core/grassdb/latlong_wgs84
 
 # copy needed files and configs for test
 COPY docker/actinia-tiling-plugin-test/actinia-tiling-plugin-test.cfg /etc/default/actinia
