@@ -13,7 +13,7 @@
       "stdout": {
         "id": "rasters",
         "format": "list",
-        "delimiter": "\n"}
+        "delimiter": "\n"
       }
     }
   ],
