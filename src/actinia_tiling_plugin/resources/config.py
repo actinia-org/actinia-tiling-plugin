@@ -26,7 +26,6 @@ __maintainer__ = "mundialis GmbH % Co. KG"
 
 
 import configparser
-import glob
 from pathlib import Path
 
 # config can be overwritten by mounting *.ini files into folders inside

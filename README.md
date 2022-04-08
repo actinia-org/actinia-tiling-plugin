@@ -61,6 +61,16 @@ cd /src/actinia-tiling-plugin/
 make test
 ```
 
+For debugging the test this might be helpful when a `waitAsyncStatusAssertHTTP` fails:
+```
+from flask.json import loads as json_loads
+resp_data = json_loads(rv.data)
+rv_user_id = resp_data["user_id"]
+rv_resource_id = resp_data["resource_id"]
+rv2 = self.server.get(URL_PREFIX + "/resources/%s/%s" % (rv_user_id, rv_resource_id), headers=self.user_auth_header)
+resp_data2 = json_loads(rv2.data)
+```
+
 ## Small Example
 ```
 actinia_base_url=http://localhost:8088/api/v3

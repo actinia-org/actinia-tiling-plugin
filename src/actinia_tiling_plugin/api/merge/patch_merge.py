@@ -33,12 +33,12 @@ from actinia_core.processing.actinia_processing.ephemeral.\
     persistent_processing import PersistentProcessing
 from actinia_core.rest.base.resource_base import ResourceBase
 from actinia_core.core.common.redis_interface import enqueue_job
-from actinia_core.core.common.process_chain import ProcessChainConverter
+# from actinia_core.core.common.process_chain import ProcessChainConverter
 from actinia_core.processing.actinia_processing.persistent.mapset_management \
     import (
         PersistentMapsetDeleter,
         PersistentMapsetUnlocker,
-)
+    )
 
 from actinia_tiling_plugin.apidocs import merge
 from actinia_tiling_plugin.resources.processes import pctpl_to_pl
@@ -134,7 +134,8 @@ class AsyncMergeProcessPatch(PersistentProcessing):
             else:
                 log.info(f"Output type '{output['param']}' not yet supported!")
             self.step += (
-                self.num_steps[output["param"]] * len(output["value"].split(","))
+                self.num_steps[output["param"]] * len(
+                    output["value"].split(","))
             )
         self.mapsetlist = self.request_data["mapsetlist"]
 
@@ -229,7 +230,6 @@ class AsyncMergeProcessPatch(PersistentProcessing):
         self.num_of_steps += self.num_steps["vector"]
         self._set_progress()
 
-
     def _execute(self):
 
         outputs = self.request_data["outputs"]
@@ -237,7 +237,7 @@ class AsyncMergeProcessPatch(PersistentProcessing):
         self.required_mapsets.extend(self.mapsetlist)
 
         self._execute_preparation()
-        pconv = ProcessChainConverter()
+        # pconv = ProcessChainConverter()
 
         self._set_progress()
 
@@ -259,7 +259,7 @@ class AsyncMergeProcessPatch(PersistentProcessing):
             # TODO not yet supported
 
         # delete temporary mapsets
-        if keep_mapsets is not True:
+        if keep_mapsets is not True and keep_mapsets.lower() != "true":
             for mapset_name in self.mapsetlist:
                 self._delete_mapset(mapset_name)
 

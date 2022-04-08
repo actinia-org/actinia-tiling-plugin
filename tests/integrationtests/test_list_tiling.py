@@ -61,7 +61,7 @@ class ListTilingTest(ActiniaResourceTestCaseBase):
         self.app_context.pop()
 
     @pytest.mark.integrationtest
-    def test_get_grid_apidocs(self):
+    def test_get_tiling_list_apidocs(self):
         """Test the get method of list tiling processes endpoint"""
         # create mapset
         self.create_new_mapset(self.mapset, self.location)

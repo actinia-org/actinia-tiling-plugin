@@ -27,6 +27,7 @@ __maintainer__ = "mundialis GmbH % Co. KG"
 
 import pytest
 from flask import Response
+from flask.json import loads as json_loads
 from jinja2 import Template
 
 from ..test_resource_base import URL_PREFIX
@@ -139,12 +140,13 @@ PC_TPL_COMPUTING_ON_TILES = """{
 }"""
 
 PC_MERGE_PATCH = """{
-  "mapsetlist": ["merge_test_mapset_tmp_grid1", "merge_test_mapset_tmp_grid2", "merge_test_mapset_tmp_grid3", "merge_test_mapset_tmp_grid4"],
+  "mapsetlist": ["merge_test_mapset_tmp_grid1", "merge_test_mapset_tmp_grid2",
+  "merge_test_mapset_tmp_grid3", "merge_test_mapset_tmp_grid4"],
   "outputs":[
     {"param": "raster", "value": "ndvi,ndwi"},
     {"param": "vector", "value": "points,areas"}
   ],
-  "keep_mapsets": {{ keep_mapsets }}
+  "keep_mapsets": "{{ keep_mapsets }}"
 }"""
 
 
@@ -165,7 +167,7 @@ class PatchMergeTest(ActiniaResourceTestCaseBase):
             name="user", role="user", process_num_limit=30,
             process_time_limit=400, accessible_datasets=accessible_datasets)
 
-    def delete_mapset(self, mapset_name):
+    def _delete_mapset(self, mapset_name):
         rv = self.server.delete(
             URL_PREFIX
             + "/locations/%s/mapsets/%s/lock"
@@ -181,14 +183,13 @@ class PatchMergeTest(ActiniaResourceTestCaseBase):
         self.waitAsyncStatusAssertHTTP(rv2, headers=self.admin_auth_header)
 
     def tearDown(self):
-        for mapset in self.created_mapsets:
-            import pdb; pdb.set_trace()
-            self.delete_mapset(mapset)
+        for mapset in set(self.created_mapsets):
+            self._delete_mapset(mapset)
         self.created_mapsets = list()
         self.app_context.pop()
 
     @pytest.mark.integrationtest
-    def test_get_grid_apidocs(self):
+    def test_get_patch_apidocs(self):
         """Test the get method of merge patch endpoint"""
         # create mapset
         self.create_new_mapset(self.mapset, self.location)
@@ -213,7 +214,7 @@ class PatchMergeTest(ActiniaResourceTestCaseBase):
             "outputs",
         ], "Parameter names are wrong"
 
-    def create_grid(self):
+    def _create_grid(self):
         # create grid
         url = f"{self.base_url}/tiling_processes/grid"
         rv2 = self.server.post(
@@ -231,7 +232,7 @@ class PatchMergeTest(ActiniaResourceTestCaseBase):
         assert "process_results" in resp2, "No 'process_results' in response"
         assert resp2["process_results"] == self.grids
 
-    def compute_in_tmp_mapsets(self):
+    def _compute_in_tmp_mapsets(self):
         # compute raster and vector maps in temporary mapsets on different
         # tiles
         procs = list()
@@ -256,48 +257,30 @@ class PatchMergeTest(ActiniaResourceTestCaseBase):
             procs.append(proc)
             del proc
 
-    @pytest.mark.integrationtest
-    def test_post_grid_keeping_mapsets(self):
-        """Test the post method of tiling grid endpoint keeping the mapsets"""
-        # create mapset
-        self.create_new_mapset(self.mapset, self.location)
-        self.created_mapsets.append(self.mapset)
-
-        self.create_grid()
-        self.compute_in_tmp_mapsets()
-
-        # merge
-        url = f"{self.base_url}/merge_processes/patch"
-        tpl = Template(PC_MERGE_PATCH)
-        pc = tpl.render(keep_mapsets=True)
-        rv = self.server.post(
-            url,
-            headers=self.user_auth_header,
-            content_type=self.content_type,
-            data=pc,
-        )
-        resp = self.waitAsyncStatusAssertHTTP(
-            rv,
-            headers=self.user_auth_header,
-            http_status=200,
-            status="finished",
-        )
-
+    def _check_merge(self, keep_mapsets):
         # check mapsets
         mapset_url = f"{URL_PREFIX}/locations/{self.location}/mapsets"
         rv_mapset = self.server.get(
             mapset_url,
             headers=self.user_auth_header,
         )
-        resp_mapset = self.waitAsyncStatusAssertHTTP(
-            rv_mapset,
-            headers=self.user_auth_header,
-            http_status=200,
-            status="finished",
-        )
-        for mapset in self.created_mapsets:
-            assert mapset in resp_mapset["process_results"], \
-                f"Mapset '{mapset}' not in list."
+        resp_mapset = json_loads(rv_mapset.data)
+        if keep_mapsets is True:
+            for mapset in self.created_mapsets:
+                assert mapset in resp_mapset["process_results"], \
+                    f"Mapset '{mapset}' not in list."
+        else:
+            not_created_mapsets = list()
+            for mapset in set(self.created_mapsets):
+                if mapset == self.mapset:
+                    assert mapset in resp_mapset["process_results"], \
+                         f"Mapset '{mapset}' not in list."
+                else:
+                    assert mapset not in resp_mapset["process_results"], \
+                         f"Mapset '{mapset}' in list."
+                    not_created_mapsets.append(mapset)
+            for mapset in not_created_mapsets:
+                self.created_mapsets.remove(mapset)
 
         # check raster
         raster_url = f"{self.base_url}/raster_layers"
@@ -305,105 +288,79 @@ class PatchMergeTest(ActiniaResourceTestCaseBase):
             raster_url,
             headers=self.user_auth_header,
         )
-        resp_raster = self.waitAsyncStatusAssertHTTP(
-            rv_raster,
-            headers=self.user_auth_header,
-            http_status=200,
-            status="finished",
-        )
+        resp_raster = json_loads(rv_raster.data)
         for rast in ["ndvi", "ndwi"]:
-            assert rast is resp_raster["process_results"], \
+            assert rast in resp_raster["process_results"], \
                 f"Raster '{rast}' not in list."
 
         # check vector
         raster_url = f"{self.base_url}/vector_layers"
-        rv_raster = self.server.get(
+        rv_vector = self.server.get(
             raster_url,
             headers=self.user_auth_header,
         )
-        resp_raster = self.waitAsyncStatusAssertHTTP(
-            rv_raster,
+        resp_vector = json_loads(rv_vector.data)
+        for vect in ["areas", "points"]:
+            assert vect in resp_vector["process_results"], \
+                f"Vector '{vect}' not in list."
+
+    @pytest.mark.integrationtest
+    def test_post_grid_keeping_mapsets(self):
+        """Test the post method of tiling grid endpoint keeping the mapsets"""
+        keep_mapsets = True
+
+        # create mapset
+        self.create_new_mapset(self.mapset, self.location)
+        self.created_mapsets.append(self.mapset)
+
+        self._create_grid()
+        self._compute_in_tmp_mapsets()
+
+        # merge
+        url = f"{self.base_url}/merge_processes/patch"
+        tpl = Template(PC_MERGE_PATCH)
+        pc = tpl.render(keep_mapsets=str(keep_mapsets).lower())
+        rv = self.server.post(
+            url,
+            headers=self.user_auth_header,
+            content_type=self.content_type,
+            data=pc,
+        )
+        self.waitAsyncStatusAssertHTTP(
+            rv,
             headers=self.user_auth_header,
             http_status=200,
             status="finished",
         )
-        for vect in ["areas", "points"]:
-            assert vect is resp_raster["process_results"], \
-                f"Vector '{vect}' not in list."
 
+        self._check_merge(keep_mapsets)
 
     @pytest.mark.integrationtest
     def test_post_grid_deleting_mapsets(self):
         """Test the post method of tiling grid endpoint deleting the mapsets"""
+        keep_mapsets = False
+
         # create mapset
         self.create_new_mapset(self.mapset, self.location)
         self.created_mapsets.append(self.mapset)
 
-        self.create_grid()
-        self.compute_in_tmp_mapsets()
+        self._create_grid()
+        self._compute_in_tmp_mapsets()
 
         # merge
         url = f"{self.base_url}/merge_processes/patch"
         tpl = Template(PC_MERGE_PATCH)
-        pc = tpl.render(keep_mapsets=False)
+        pc = tpl.render(keep_mapsets=str(keep_mapsets).lower())
         rv = self.server.post(
             url,
             headers=self.user_auth_header,
             content_type=self.content_type,
             data=pc,
         )
-        resp = self.waitAsyncStatusAssertHTTP(
+        self.waitAsyncStatusAssertHTTP(
             rv,
             headers=self.user_auth_header,
             http_status=200,
             status="finished",
         )
-
-        # check mapsets
-        mapset_url = f"{URL_PREFIX}/locations/{self.location}/mapsets"
-        rv_mapset = self.server.get(
-            mapset_url,
-            headers=self.user_auth_header,
-        )
-        resp_mapset = self.waitAsyncStatusAssertHTTP(
-            rv_mapset,
-            headers=self.user_auth_header,
-            http_status=200,
-            status="finished",
-        )
-        import pdb; pdb.set_trace()
-        for mapset in self.created_mapsets:
-            assert mapset in resp_mapset["process_results"], \
-                f"Mapset '{mapset}' not in list."
-
-        # check raster
-        raster_url = f"{self.base_url}/raster_layers"
-        rv_raster = self.server.get(
-            raster_url,
-            headers=self.user_auth_header,
-        )
-        resp_raster = self.waitAsyncStatusAssertHTTP(
-            rv_raster,
-            headers=self.user_auth_header,
-            http_status=200,
-            status="finished",
-        )
-        for rast in ["ndvi", "ndwi"]:
-            assert rast is resp_raster["process_results"], \
-                f"Raster '{rast}' not in list."
-
-        # check vector
-        raster_url = f"{self.base_url}/vector_layers"
-        rv_raster = self.server.get(
-            raster_url,
-            headers=self.user_auth_header,
-        )
-        resp_raster = self.waitAsyncStatusAssertHTTP(
-            rv_raster,
-            headers=self.user_auth_header,
-            http_status=200,
-            status="finished",
-        )
-        for vect in ["areas", "points"]:
-            assert vect is resp_raster["process_results"], \
-                f"Vector '{vect}' not in list."
+        self._check_merge(keep_mapsets)
