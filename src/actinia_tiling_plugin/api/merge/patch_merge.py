@@ -33,7 +33,6 @@ from actinia_core.processing.actinia_processing.ephemeral.\
     persistent_processing import PersistentProcessing
 from actinia_core.rest.base.resource_base import ResourceBase
 from actinia_core.core.common.redis_interface import enqueue_job
-# from actinia_core.core.common.process_chain import ProcessChainConverter
 from actinia_core.processing.actinia_processing.persistent.mapset_management \
     import (
         PersistentMapsetDeleter,
@@ -61,10 +60,10 @@ class AsyncMergeProcessPatchResource(ResourceBase):
             mapset_name=mapset_name,
         )
         if rdc:
-            # # for debugging use the following to lines instead of enqueue_job
-            # processing = AsyncMergeProcessPatch(rdc)
-            # processing.run()
-            enqueue_job(self.job_timeout, start_job, rdc)
+            # for debugging use the following to lines instead of enqueue_job
+            processing = AsyncMergeProcessPatch(rdc)
+            processing.run()
+            # enqueue_job(self.job_timeout, start_job, rdc)
 
         return rdc
 
@@ -127,8 +126,8 @@ class AsyncMergeProcessPatch(PersistentProcessing):
                 self.raster_maps = output["value"].split(",")
             elif output["param"] == "vector":
                 self.vector_maps = output["value"].split(",")
-            # elif output["param"] == "strds":
-            #     self.strds = output["value"].split(",")
+            elif output["param"] == "strds":
+                self.strds = output["value"].split(",")
             # elif output["param"] == "stvds":
             #     self.stvds = output["value"].split(",")
             else:
@@ -232,31 +231,31 @@ class AsyncMergeProcessPatch(PersistentProcessing):
 
     def _execute(self):
 
-        outputs = self.request_data["outputs"]
         keep_mapsets = self.request_data["keep_mapsets"]
         self.required_mapsets.extend(self.mapsetlist)
 
         self._execute_preparation()
-        # pconv = ProcessChainConverter()
-
         self._set_progress()
 
         # patch the output maps
-        for output in outputs:
-            if output["param"] == "raster":
-                rasters = output["value"].split(",")
-                for rast in rasters:
-                    self._patch_raster(rast)
+        strds_infos = dict()
+        for strds in self.strds:
+            # t.rast.list ?
+            tpl_values_strds = {"strds": strds}
+            pl_strds, pconv = pctpl_to_pl(
+                "patch/pc_strds_list_rasters.json", tpl_values_strds)
+            self.output_parser_list = pconv.output_parser_list
+            self._execute_process_list(pl_strds)
+            self._parse_module_outputs()
+            strds_rasters = self.module_results["rasters"]
+            import pdb; pdb.set_trace()
 
-            elif output["param"] == "vector":
-                vectors = output["value"].split(",")
-                for vect in vectors:
-                    self._patch_vector(vect)
+        for rast in self.raster_maps:
+            self._patch_raster(rast)
+        for vect in self.vector_maps:
+            self._patch_vector(vect)
 
             # TODO STRDS + STVDS
-
-            # else:
-            # TODO not yet supported
 
         # delete temporary mapsets
         if keep_mapsets is not True and keep_mapsets.lower() != "true":

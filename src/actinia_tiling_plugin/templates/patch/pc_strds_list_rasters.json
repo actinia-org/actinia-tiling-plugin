@@ -1,0 +1,22 @@
+{
+  "list": [
+    {
+      "id": "list_rasters",
+      "module": "t.rast.list",
+      "inputs": [
+        {
+          "param": "input",
+          "value": "{{ strds }}"
+        }
+      ],
+      "superquiet": true,
+      "stdout": {
+        "id": "rasters",
+        "format": "list",
+        "delimiter": "\n"}
+      }
+
+    }
+  ],
+  "version": "1"
+}

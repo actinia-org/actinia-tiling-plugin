@@ -105,6 +105,7 @@ curl -u ${auth} -X POST ${mapset_url}_tmp1/processing_async -H 'accept: applicat
 curl -u ${auth} -X GET  "http://localhost:8088/api/v3/resources/actinia-gdi/resource_id-..." | jq
 curl -u ${auth} -X GET ${mapset_url}_tmp1/vector_layers | jq
 curl -u ${auth} -X GET ${mapset_url}_tmp1/raster_layers | jq
+curl -u ${auth} -X GET ${mapset_url}_tmp1/strds | jq
 
 # process - tile 2
 json=test_postbodies/grid_2_calulation.json
@@ -124,6 +125,7 @@ json=test_postbodies/patch_merge.json
 curl -u ${auth} -X POST ${mapset_url}/merge_processes/patch -H 'accept: application/json' -H 'Content-Type: application/json' -d @${json} | jq
 curl -u ${auth} -X GET ${mapset_url}/vector_layers | jq
 curl -u ${auth} -X GET ${mapset_url}/raster_layers | jq
+curl -u ${auth} -X GET ${mapset_url}/strds | jq
 
 curl -u ${auth} -X GET ${actinia_base_url}/locations/loc_25832/mapsets | jq
 ```
