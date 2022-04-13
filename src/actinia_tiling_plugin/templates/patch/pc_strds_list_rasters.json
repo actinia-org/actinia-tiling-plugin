@@ -1,6 +1,22 @@
 {
   "list": [
     {
+      "id": "t_info",
+      "module": "t.info",
+      "inputs": [
+        {
+          "param": "input",
+          "value": "{{ strds }}"
+        }
+      ],
+      "superquiet": true,
+      "stdout": {
+        "id": "strds_info",
+        "format": "kv",
+        "delimiter": "="
+      }
+    },
+    {
       "id": "list_rasters",
       "module": "t.rast.list",
       "inputs": [

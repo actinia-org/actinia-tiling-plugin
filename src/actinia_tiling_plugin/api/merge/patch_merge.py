@@ -239,23 +239,43 @@ class AsyncMergeProcessPatch(PersistentProcessing):
 
         # patch the output maps
         strds_infos = dict()
+
+        # strds get list of rasters
         for strds in self.strds:
-            # t.rast.list ?
-            tpl_values_strds = {"strds": strds}
+            tpl_values_strds = {"strds": f"{strds}@{self.mapsetlist[0]}"}
             pl_strds, pconv = pctpl_to_pl(
                 "patch/pc_strds_list_rasters.json", tpl_values_strds)
             self.output_parser_list = pconv.output_parser_list
             self._execute_process_list(pl_strds)
             self._parse_module_outputs()
             strds_rasters = self.module_results["rasters"]
-            import pdb; pdb.set_trace()
+            # TODO auswerten von strds_info
+            strds_info = self.module_results["strds_info"]
+            col_names = strds_rasters[0].split("|")
+            strds_raster_infos = dict()
+            for idx in range(1, len(strds_rasters)):
+                rast_info = dict()
+                rinfos = strds_rasters[idx].split("|")
+                for j in range(len(rinfos)):
+                    rast_info[col_names[j]] = rinfos[j]
+                rast_info["all"] = strds_rasters[idx]
+                strds_raster_infos[rast_info["name"]] = rast_info
+                if rast_info["name"] not in self.raster_maps:
+                    self.raster_maps.append(rast_info["name"])
 
         for rast in self.raster_maps:
             self._patch_raster(rast)
         for vect in self.vector_maps:
             self._patch_vector(vect)
 
-            # TODO STRDS + STVDS
+        # TODO STRDS create new one
+        import pdb; pdb.set_trace()
+        # strds_raster_infos + self.raster_maps
+
+        # t.create output=name type=strds temporaltype=? semantictype=? title=? description=?
+        # t.register -i? input
+
+        # TODO STVDS
 
         # delete temporary mapsets
         if keep_mapsets is not True and keep_mapsets.lower() != "true":

@@ -1,0 +1,21 @@
+{
+  "list": [
+    {
+      "id": "create_strds",
+      "module": "t.create",
+      "inputs": [
+        {
+          "param": "input",
+          "value": "{{ strds }}"
+        }
+      ],
+      "superquiet": true,
+      "stdout": {
+        "id": "rasters",
+        "format": "list",
+        "delimiter": "\n"
+      }
+    }
+  ],
+  "version": "1"
+}
