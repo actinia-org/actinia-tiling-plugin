@@ -5,16 +5,48 @@
       "module": "t.create",
       "inputs": [
         {
-          "param": "input",
+          "param": "type",
+          "value": "strds"
+        },
+        {
+          "param": "temporaltype",
+          "value": "{{ temporaltype }}"
+        },
+        {
+          "param": "semantictype",
+          "value": "{{ semantictype }}"
+        },
+        {
+          "param": "title",
+          "value": "{{ title }}"
+        },
+        {
+          "param": "description",
+          "value": "{{ description }}"
+        }
+      ],
+      "outputs": [
+        {
+          "param": "output",
           "value": "{{ strds }}"
         }
       ],
-      "superquiet": true,
-      "stdout": {
-        "id": "rasters",
-        "format": "list",
-        "delimiter": "\n"
-      }
+      "superquiet": true
+    },
+    {
+      "id": "register_raster_in_strds",
+      "module": "t.register",
+      "inputs": [
+        {
+          "param": "input",
+          "value": "{{ strds }}"
+        },
+        {
+          "param": "file",
+          "value": "{{ file }}"
+        }
+      ],
+      "superquiet": true
     }
   ],
   "version": "1"

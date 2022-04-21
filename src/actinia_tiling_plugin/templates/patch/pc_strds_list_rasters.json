@@ -1,7 +1,7 @@
 {
   "list": [
     {
-      "id": "t_info",
+      "id": "t_info_info",
       "module": "t.info",
       "inputs": [
         {
@@ -14,7 +14,25 @@
         "id": "strds_info",
         "format": "kv",
         "delimiter": "="
-      }
+      },
+      "flags": "g"
+    },
+    {
+      "id": "t_info_desc",
+      "module": "t.info",
+      "inputs": [
+        {
+          "param": "input",
+          "value": "{{ strds }}"
+        }
+      ],
+      "superquiet": true,
+      "stdout": {
+        "id": "strds_description",
+        "format": "list",
+        "delimiter": "\n"
+      },
+      "flags": "h"
     },
     {
       "id": "list_rasters",
