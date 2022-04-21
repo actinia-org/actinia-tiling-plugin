@@ -117,10 +117,10 @@ class AsyncMergeProcessPatch(PersistentProcessing):
         self.response_model_class = GridTilingResponseModel
         self.num_of_steps = 0
         self.num_steps = {
-            "raster": 2,
-            "vector": 3,
-            "strds": 0,
-            "stvds": 0,
+            "raster": [2],
+            "vector": [3],
+            "strds": [3, 2],
+            "stvds": [0],
         }
         self.step = 0
         self.raster_maps = list()
@@ -140,7 +140,7 @@ class AsyncMergeProcessPatch(PersistentProcessing):
             else:
                 log.info(f"Output type '{output['param']}' not yet supported!")
             self.step += (
-                self.num_steps[output["param"]] * len(
+                sum(self.num_steps[output["param"]]) * len(
                     output["value"].split(","))
             )
         self.mapsetlist = self.request_data["mapsetlist"]
@@ -210,7 +210,7 @@ class AsyncMergeProcessPatch(PersistentProcessing):
         }
         plr, _ = pctpl_to_pl(tpl, tpl_rpatch)
         self._execute_process_list(plr)
-        self.num_of_steps += self.num_steps["raster"]
+        self.num_of_steps += self.num_steps["raster"][0]
         self._set_progress()
 
     def _patch_vector(self, vect):
@@ -233,7 +233,7 @@ class AsyncMergeProcessPatch(PersistentProcessing):
         }
         plv, _ = pctpl_to_pl(tpl, tpl_vpatch)
         self._execute_process_list(plv)
-        self.num_of_steps += self.num_steps["vector"]
+        self.num_of_steps += self.num_steps["vector"][0]
         self._set_progress()
 
     def _prepare_patch_strds(self):
@@ -276,6 +276,13 @@ class AsyncMergeProcessPatch(PersistentProcessing):
             strds_raster_infos["temporaltype"] = strds_info["temporal_type"]
             strds_raster_infos["semantictype"] = strds_info["semantic_type"]
             self.strds_infos[strds] = strds_raster_infos
+            self.num_of_steps += self.num_steps["strds"][0]
+            self.step += (
+                self.num_steps["raster"][0] * len(
+                    strds_raster_infos["rasters"]
+                )
+            )
+            self._set_progress()
 
     def _patch_strds(self, strds_name, strds_info):
         """Creates new STRDS as a duplicate with patched rasters.
@@ -303,6 +310,8 @@ class AsyncMergeProcessPatch(PersistentProcessing):
             "patch/pc_strds_create.json", tpl_calues_strds_create)
         self._execute_process_list(pl_strds_c)
         os.remove(tmp_strds_file)
+        self.num_of_steps += self.num_steps["strds"][1]
+        self._set_progress()
 
     def _execute(self):
 
