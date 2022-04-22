@@ -61,7 +61,7 @@ class AsyncMergeProcessPatchResource(ResourceBase):
             mapset_name=mapset_name,
         )
         if rdc:
-            ## for debugging use the following two lines instead of enqueue_job
+            # # for debugging use the following lines instead of enqueue_job
             # processing = AsyncMergeProcessPatch(rdc)
             # processing.run()
             enqueue_job(self.job_timeout, start_job, rdc)
