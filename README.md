@@ -97,7 +97,7 @@ curl -u ${auth} -X GET ${mapset_url}/tiling_processes | jq
 curl -u ${auth} -X GET ${mapset_url}/tiling_processes/grid | jq
 ```
 
-### Processing Example as prepartation for the merge
+### Processing Example as preparation for the merge
 ```
 # process - tile 1
 json=test_postbodies/grid_1_calulation.json
