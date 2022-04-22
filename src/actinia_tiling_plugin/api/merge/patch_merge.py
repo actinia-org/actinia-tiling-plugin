@@ -291,14 +291,14 @@ class AsyncMergeProcessPatch(PersistentProcessing):
         tmp_strds_file = os.path.join(
             global_config.TMP_WORKDIR, f"strds_{strds_name}_{id}.txt"
         )
-        # write file to register the rasters in the STRDS without the
+        # write file to register the rasters in the STRDS without the mapset
         with open(tmp_strds_file, "w") as f:
             for rast in strds_info["rasters"]:
                 r_info = rast["all"].replace(
                     f"{self.mapsetlist[0]}|", ""
                 )
                 f.write(r_info + "\n")
-        tpl_calues_strds_create = {
+        tpl_values_strds_create = {
             "strds": f"{strds_name}",
             "temporaltype": strds_info["temporaltype"],
             "semantictype": strds_info["semantictype"],
@@ -307,7 +307,7 @@ class AsyncMergeProcessPatch(PersistentProcessing):
             "file": tmp_strds_file,
         }
         pl_strds_c, _ = pctpl_to_pl(
-            "patch/pc_strds_create.json", tpl_calues_strds_create)
+            "patch/pc_strds_create.json", tpl_values_strds_create)
         self._execute_process_list(pl_strds_c)
         os.remove(tmp_strds_file)
         self.num_of_steps += self.num_steps["strds"][1]
