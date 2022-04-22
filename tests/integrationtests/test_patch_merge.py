@@ -58,7 +58,7 @@ PC_TPL_COMPUTING_ON_TILES = """{
       "flags": "pa"
     },
     {
-      "id": "random_ndvi_raster",
+      "id": "random_ndvi_1_raster",
       "module": "r.surf.random",
       "inputs": [
         {
@@ -73,7 +73,49 @@ PC_TPL_COMPUTING_ON_TILES = """{
       "outputs": [
         {
           "param": "output",
-          "value": "ndvi"
+          "value": "ndvi_1"
+        }
+      ],
+      "flags": "i"
+    },
+    {
+      "id": "random_ndvi_2_raster",
+      "module": "r.surf.random",
+      "inputs": [
+        {
+          "param": "min",
+          "value": "0"
+        },
+        {
+          "param": "max",
+          "value": "200"
+        }
+      ],
+      "outputs": [
+        {
+          "param": "output",
+          "value": "ndvi_2"
+        }
+      ],
+      "flags": "i"
+    },
+    {
+      "id": "random_ndvi_3_raster",
+      "module": "r.surf.random",
+      "inputs": [
+        {
+          "param": "min",
+          "value": "0"
+        },
+        {
+          "param": "max",
+          "value": "200"
+        }
+      ],
+      "outputs": [
+        {
+          "param": "output",
+          "value": "ndvi_3"
         }
       ],
       "flags": "i"
@@ -95,6 +137,53 @@ PC_TPL_COMPUTING_ON_TILES = """{
         {
           "param": "output",
           "value": "ndwi"
+        }
+      ],
+      "flags": "i"
+    },
+    {
+      "id": "ndvi_strds_create",
+      "module": "t.create",
+      "inputs": [
+        {
+          "param": "type",
+          "value": "strds"
+        },
+        {
+          "param": "description",
+          "value": "example strds"
+        },
+        {
+          "param": "title",
+          "value": "example_strds"
+        }
+      ],
+      "outputs": [
+        {
+          "param": "output",
+          "value": "ndvi"
+        }
+      ]
+    },
+    {
+      "id": "ndvi_strds_register",
+      "module": "t.register",
+      "inputs": [
+        {
+          "param": "input",
+          "value": "ndvi"
+        },
+        {
+          "param": "maps",
+          "value": "ndvi_1,ndvi_2,ndvi_3"
+        },
+        {
+          "param": "start",
+          "value": "2022-01-01"
+        },
+        {
+          "param": "increment",
+          "value": "1 months"
         }
       ],
       "flags": "i"
@@ -143,8 +232,9 @@ PC_MERGE_PATCH = """{
   "mapsetlist": ["merge_test_mapset_tmp_grid1", "merge_test_mapset_tmp_grid2",
   "merge_test_mapset_tmp_grid3", "merge_test_mapset_tmp_grid4"],
   "outputs":[
-    {"param": "raster", "value": "ndvi,ndwi"},
-    {"param": "vector", "value": "points,areas"}
+    {"param": "raster", "value": "ndwi"},
+    {"param": "vector", "value": "points,areas"},
+    {"param": "strds", "value": "ndvi"}
   ],
   "keep_mapsets": "{{ keep_mapsets }}"
 }"""
@@ -163,9 +253,11 @@ class PatchMergeTest(ActiniaResourceTestCaseBase):
     def setUpClass(cls):
         super(PatchMergeTest, cls).setUpClass()
         accessible_datasets = {"nc_spm_08": ["PERMANENT"]}
+        accessible_modules = ["t.create", "t.register"]
         cls.user_id, cls.user_group, cls.user_auth_header = cls.create_user(
             name="user", role="user", process_num_limit=30,
-            process_time_limit=400, accessible_datasets=accessible_datasets)
+            process_time_limit=400, accessible_datasets=accessible_datasets,
+            accessible_modules=accessible_modules)
 
     def _delete_mapset(self, mapset_name):
         rv = self.server.delete(
@@ -289,20 +381,50 @@ class PatchMergeTest(ActiniaResourceTestCaseBase):
             headers=self.user_auth_header,
         )
         resp_raster = json_loads(rv_raster.data)
-        for rast in ["ndvi", "ndwi"]:
+        for rast in ["ndvi_1", "ndvi_2", "ndvi_3", "ndwi"]:
             assert rast in resp_raster["process_results"], \
                 f"Raster '{rast}' not in list."
 
         # check vector
-        raster_url = f"{self.base_url}/vector_layers"
+        vector_url = f"{self.base_url}/vector_layers"
         rv_vector = self.server.get(
-            raster_url,
+            vector_url,
             headers=self.user_auth_header,
         )
         resp_vector = json_loads(rv_vector.data)
         for vect in ["areas", "points"]:
             assert vect in resp_vector["process_results"], \
                 f"Vector '{vect}' not in list."
+
+        # check strds
+        strds_url = f"{self.base_url}/strds"
+        rv_strds = self.server.get(
+            strds_url,
+            headers=self.user_auth_header,
+        )
+        resp_strds = json_loads(rv_strds.data)
+        comp_strds = {
+            "ndvi": [
+                f"ndvi_1@{self.mapset}",
+                f"ndvi_2@{self.mapset}",
+                f"ndvi_3@{self.mapset}",
+            ]
+        }
+        for strds in comp_strds:
+            assert strds in resp_strds["process_results"], \
+                f"STRDS '{strds}' not in list."
+            strds2_url = f"{self.base_url}/strds/{strds}/raster_layers"
+            rv2_strds = self.server.get(
+                strds2_url,
+                headers=self.user_auth_header,
+            )
+            resp_strds2 = json_loads(rv2_strds.data)
+            strds_rast = [
+                entry["id"] for entry in resp_strds2["process_results"]
+            ]
+            strds_rast.sort()
+            assert strds_rast == comp_strds[strds], \
+                f"Raster of STRDS '{strds}' are wrong."
 
     @pytest.mark.integrationtest
     def test_post_grid_keeping_mapsets(self):
