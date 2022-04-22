@@ -55,7 +55,7 @@ class AsyncTilingProcessGridResource(ResourceBase):
             mapset_name=mapset_name,
         )
         if rdc:
-            # # for debugging use the following to lines instead of enqueue_job
+            ## for debugging use the following two lines instead of enqueue_job
             # processing = AsyncTilingProcessGrid(rdc)
             # processing.run()
             enqueue_job(self.job_timeout, start_job, rdc)
