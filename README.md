@@ -74,7 +74,7 @@ resp_data2 = json_loads(rv2.data)
 ## Small Example
 ```
 actinia_base_url=http://localhost:8088/api/v3
-mapset_url=${actinia_base_url}/locations/loc_25832/mapsets/hpda_tiling_usermapset
+mapset_url=${actinia_base_url}/locations/loc_25832/mapsets/tiling_usermapset
 auth="actinia-gdi:actinia-gdi"
 ```
 
@@ -97,7 +97,7 @@ curl -u ${auth} -X GET ${mapset_url}/tiling_processes | jq
 curl -u ${auth} -X GET ${mapset_url}/tiling_processes/grid | jq
 ```
 
-### Processing Example as prepartation for the merge
+### Processing Example as preparation for the merge
 ```
 # process - tile 1
 json=test_postbodies/grid_1_calulation.json

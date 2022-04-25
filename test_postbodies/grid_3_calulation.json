@@ -6,7 +6,7 @@
       "inputs": [
         {
           "param": "vector",
-          "value": "grid03@hpda_tiling_usermapset"
+          "value": "grid03@tiling_usermapset"
         },
         {
           "param": "res",

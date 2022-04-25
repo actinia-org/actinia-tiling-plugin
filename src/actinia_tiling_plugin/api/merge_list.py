@@ -35,11 +35,11 @@ from actinia_tiling_plugin.models.response_models.merge import \
 
 
 class MergeListResource(ResourceBase):
-    """Returns a list of all merge prcesses"""
+    """Returns a list of all merge processes"""
 
     @swagger.doc(merge.merge_list_get_docs)
     def get(self, location_name, mapset_name):
-        """Returns a list of all merge prcesses"""
+        """Returns a list of all merge processes"""
 
         patch_doc = merge.patch_merge_post_docs
         merge_docs = [("patch", patch_doc)]

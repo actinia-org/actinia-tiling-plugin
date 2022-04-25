@@ -66,7 +66,7 @@ class AsyncMergeProcessPatchResource(ResourceBase):
             mapset_name=mapset_name,
         )
         if rdc:
-            # # for debugging use the following to lines instead of enqueue_job
+            # # for debugging use the following lines instead of enqueue_job
             # processing = AsyncMergeProcessPatch(rdc)
             # processing.run()
             enqueue_job(self.job_timeout, start_job, rdc)
@@ -98,7 +98,7 @@ class AsyncMergeProcessPatchResource(ResourceBase):
         process_desc["parameters"][1]["description"] = (
             "A list of data to patch in the new mapset. The 'param' must "
             "be on of 'vector', 'raster' or 'strds' and the 'value' is a "
-            "string of the maps which should be pateched."
+            "string of the maps which should be patched."
         )
         return make_response(jsonify(process_desc), 200)
 

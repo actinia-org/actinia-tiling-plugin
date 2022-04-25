@@ -54,10 +54,10 @@ tiling_list_get_docs = {
 grid_tiling_get_docs = {
     # "summary" is taken from the description of the get method
     "tags": ["Tiling"],
-    "description": "Returns only the api description of the POST endpoint.",
+    "description": "Returns only the API description of the POST endpoint.",
     "responses": {
         "200": {
-            "description": "This response returns the api description of the "
+            "description": "This response returns the API description of the "
                            "POST endpoint.",
             "schema": SimpleStatusCodeResponseModel,
         }
