@@ -239,7 +239,7 @@ class AsyncMergeProcessPatch(PersistentProcessing):
     def _prepare_patch_strds(self):
         """Prepares the patch of STRDS by reading one STRDS and adding the
         rasters to the list of rasters to patch and writing other information
-        to a the dict self.strds_infos.
+        to the dict self.strds_infos.
         """
         for strds in self.strds:
             # strds get list of rasters and other STRDS infos
