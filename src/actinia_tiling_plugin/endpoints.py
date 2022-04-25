@@ -28,6 +28,9 @@ __maintainer__ = "mundialis GmbH % Co. KG"
 from actinia_tiling_plugin.api.tiling_list import TilingListResource
 from actinia_tiling_plugin.api.tiling.tiling_grid import \
     AsyncTilingProcessGridResource
+from actinia_tiling_plugin.api.merge_list import MergeListResource
+from actinia_tiling_plugin.api.merge.patch_merge import \
+    AsyncMergeProcessPatchResource
 
 
 # endpoints loaded if run as actinia-core plugin as well as standalone app
@@ -44,4 +47,16 @@ def create_endpoints(flask_api):
         AsyncTilingProcessGridResource,
         "/locations/<string:location_name>/mapsets/"
         "<string:mapset_name>/tiling_processes/grid",
+    )
+
+    # merge
+    flask_api.add_resource(
+        MergeListResource,
+        "/locations/<string:location_name>/mapsets/"
+        "<string:mapset_name>/merge_processes",
+    )
+    flask_api.add_resource(
+        AsyncMergeProcessPatchResource,
+        "/locations/<string:location_name>/mapsets/"
+        "<string:mapset_name>/merge_processes/patch",
     )

@@ -1,0 +1,8 @@
+{
+  "mapsetlist": ["tiling_usermapset_tmp1", "tiling_usermapset_tmp2", "tiling_usermapset_tmp3"],
+  "outputs":[
+    {"param": "raster", "value": "ndvi,ndwi"},
+    {"param": "vector", "value": "points,areas"}
+  ],
+  "keep_mapsets": true
+}

@@ -1,0 +1,34 @@
+{
+  "list": [
+    {
+      "id": "set_region_to_vector",
+      "module": "g.region",
+      "inputs": [
+        {
+          "param": "vector",
+          "value": "{{ vectorlist }}"
+        }
+      ],
+      "flags": "p",
+      "superquiet": true
+    },
+    {
+      "id": "patch_vector",
+      "module": "v.patch",
+      "inputs": [
+        {
+          "param": "input",
+          "value": "{{ vectorlist }}"
+        }
+      ],
+      "outputs": [
+        {
+          "param": "output",
+          "value": "{{ vector }}"
+        }
+      ]{% if attributetable is sameas true %},
+      "flags": "e"{% endif %}
+    }
+  ],
+  "version": "1"
+}

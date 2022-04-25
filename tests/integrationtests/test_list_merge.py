@@ -16,7 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-Tests for tiling list endpoint
+Tests for merge list endpoint
 """
 
 __license__ = "GPLv3"
@@ -32,10 +32,10 @@ from ..test_resource_base import URL_PREFIX
 from ..test_resource_base import ActiniaResourceTestCaseBase
 
 
-class ListTilingTest(ActiniaResourceTestCaseBase):
+class ListMergeTest(ActiniaResourceTestCaseBase):
 
     location = "nc_spm_08"
-    mapset = "tiling_test_mapset"
+    mapset = "merge_test_mapset"
     base_url = f"{URL_PREFIX}/locations/{location}/mapsets/{mapset}"
     content_type = "application/json"
 
@@ -61,21 +61,21 @@ class ListTilingTest(ActiniaResourceTestCaseBase):
         self.app_context.pop()
 
     @pytest.mark.integrationtest
-    def test_get_tiling_list_apidocs(self):
-        """Test the get method of list tiling processes endpoint"""
+    def test_get_merge_apidocs(self):
+        """Test the get method of list merge processes endpoint"""
         # create mapset
         self.create_new_mapset(self.mapset, self.location)
 
-        url = f"{self.base_url}/tiling_processes"
+        url = f"{self.base_url}/merge_processes"
         resp = self.server.get(url, headers=self.user_auth_header)
 
         assert type(resp) is Response, "The response is not of type Response"
         assert resp.status_code == 200, "The status code is not 200"
-        assert "tiling_processes" in resp.json[0], \
-            "No 'tiling_processes' in response"
-        assert "categories" in resp.json[0]["tiling_processes"][0], \
-            "No 'categories' in tiling process response"
-        assert "description" in resp.json[0]["tiling_processes"][0], \
-            "No 'description' in tiling process response"
-        assert "id" in resp.json[0]["tiling_processes"][0], \
-            "No 'id' in tiling process response"
+        assert "merge_processes" in resp.json[0], \
+            "No 'merge_processes' in response"
+        assert "categories" in resp.json[0]["merge_processes"][0], \
+            "No 'categories' in merge process response"
+        assert "description" in resp.json[0]["merge_processes"][0], \
+            "No 'description' in merge process response"
+        assert "id" in resp.json[0]["merge_processes"][0], \
+            "No 'id' in merge process response"

@@ -1,0 +1,98 @@
+{
+  "list": [
+    {
+      "id": "set_region_for_epsg25832",
+      "module": "g.region",
+      "inputs": [
+        {
+          "param": "vector",
+          "value": "grid02@tiling_usermapset"
+        },
+        {
+          "param": "res",
+          "value": "10"
+        }
+      ],
+      "flags": "pa"
+    },
+    {
+      "id": "random_ndvi_raster",
+      "module": "r.surf.random",
+      "inputs": [
+        {
+          "param": "min",
+          "value": "0"
+        },
+        {
+          "param": "max",
+          "value": "200"
+        }
+      ],
+      "outputs": [
+        {
+          "param": "output",
+          "value": "ndvi"
+        }
+      ],
+      "flags": "i"
+    },
+    {
+      "id": "random_ndwi_raster",
+      "module": "r.surf.random",
+      "inputs": [
+        {
+          "param": "min",
+          "value": "0"
+        },
+        {
+          "param": "max",
+          "value": "1"
+        }
+      ],
+      "outputs": [
+        {
+          "param": "output",
+          "value": "ndwi"
+        }
+      ],
+      "flags": "i"
+    },
+    {
+      "id": "random_test_vector_points",
+      "module": "v.random",
+      "inputs": [
+        {
+          "param": "npoints",
+          "value": "3"
+        }
+      ],
+      "outputs": [
+        {
+          "param": "output",
+          "value": "points"
+        }
+      ]
+    },
+    {
+      "id": "random_test_vector_aras",
+      "module": "v.buffer",
+      "inputs": [
+        {
+          "param": "input",
+          "value": "points"
+        },
+        {
+          "param": "distance",
+          "value": "10"
+        }
+      ],
+      "outputs": [
+        {
+          "param": "output",
+          "value": "areas"
+        }
+      ]
+    }
+  ],
+  "version": "1"
+}

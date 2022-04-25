@@ -1,0 +1,33 @@
+{
+  "list": [
+    {
+      "id": "set_region_to_raster",
+      "module": "g.region",
+      "inputs": [
+        {
+          "param": "raster",
+          "value": "{{ rasterlist }}"
+        }
+      ],
+      "flags": "p",
+      "superquiet": true
+    },
+    {
+      "id": "patch_raster",
+      "module": "r.patch",
+      "inputs": [
+        {
+          "param": "input",
+          "value": "{{ rasterlist }}"
+        }
+      ],
+      "outputs": [
+        {
+          "param": "output",
+          "value": "{{ raster }}"
+        }
+      ]
+    }
+  ],
+  "version": "1"
+}

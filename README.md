@@ -61,14 +61,25 @@ cd /src/actinia-tiling-plugin/
 make test
 ```
 
+For debugging the test this might be helpful when a `waitAsyncStatusAssertHTTP` fails:
+```
+from flask.json import loads as json_loads
+resp_data = json_loads(rv.data)
+rv_user_id = resp_data["user_id"]
+rv_resource_id = resp_data["resource_id"]
+rv2 = self.server.get(URL_PREFIX + "/resources/%s/%s" % (rv_user_id, rv_resource_id), headers=self.user_auth_header)
+resp_data2 = json_loads(rv2.data)
+```
+
 ## Small Example
+```
+actinia_base_url=http://localhost:8088/api/v3
+mapset_url=${actinia_base_url}/locations/loc_25832/mapsets/tiling_usermapset
+auth="actinia-gdi:actinia-gdi"
+```
 
 ### Grid Tiling Example
 ```
-actinia_base_url=http://localhost:8088/api/v3
-mapset_url=${actinia_base_url}/locations/loc_25832/mapsets/hpda_tiling_user
-auth="actinia-gdi:actinia-gdi"
-
 # grid tiling
 # the region should be set correctly
 json_reg=test_postbodies/set_region_for_epsg25832.json
@@ -86,17 +97,38 @@ curl -u ${auth} -X GET ${mapset_url}/tiling_processes | jq
 curl -u ${auth} -X GET ${mapset_url}/tiling_processes/grid | jq
 ```
 
-### Processing Example as prepartation for the merge
+### Processing Example as preparation for the merge
+```
+# process - tile 1
+json=test_postbodies/grid_1_calulation.json
+curl -u ${auth} -X POST ${mapset_url}_tmp1/processing_async -H 'accept: application/json' -H 'Content-Type: application/json' -d @${json} | jq
+curl -u ${auth} -X GET  "http://localhost:8088/api/v3/resources/actinia-gdi/resource_id-..." | jq
+curl -u ${auth} -X GET ${mapset_url}_tmp1/vector_layers | jq
+curl -u ${auth} -X GET ${mapset_url}_tmp1/raster_layers | jq
 
+# process - tile 2
+json=test_postbodies/grid_2_calulation.json
+curl -u ${auth} -X POST ${mapset_url}_tmp2/processing_async -H 'accept: application/json' -H 'Content-Type: application/json' -d @${json} | jq
+curl -u ${auth} -X GET  "http://localhost:8088/api/v3/resources/actinia-gdi/resource_id-..." | jq
 
-
-
+# process - tile 3
+json=test_postbodies/grid_3_calulation.json
+curl -u ${auth} -X POST ${mapset_url}_tmp3/processing_async -H 'accept: application/json' -H 'Content-Type: application/json' -d @${json} | jq
+curl -u ${auth} -X GET  "http://localhost:8088/api/v3/resources/actinia-gdi/resource_id-..." | jq
+```
 
 ### Patch merge Example
+```
+json=test_postbodies/patch_merge_no_mapset_deletion.json
+json=test_postbodies/patch_merge.json
+curl -u ${auth} -X POST ${mapset_url}/merge_processes/patch -H 'accept: application/json' -H 'Content-Type: application/json' -d @${json} | jq
+curl -u ${auth} -X GET ${mapset_url}/vector_layers | jq
+curl -u ${auth} -X GET ${mapset_url}/raster_layers | jq
 
+curl -u ${auth} -X GET ${actinia_base_url}/locations/loc_25832/mapsets | jq
+```
 
 
 
 ## TODO
-* zero Padding
 * Region statt Vector speichern (wie res setzen?)

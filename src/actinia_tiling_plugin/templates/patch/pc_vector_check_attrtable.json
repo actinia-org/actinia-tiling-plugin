@@ -1,0 +1,22 @@
+{
+  "list": [
+    {
+      "id": "check_attribute_table",
+      "module": "v.db.connect",
+      "inputs": [
+        {
+          "param": "map",
+          "value": "{{ map }}"
+        }
+      ],
+      "flags": "g",
+      "superquiet": true,
+      "stdout": {
+        "id": "attrtable",
+        "format": "list",
+        "delimiter": "|"
+      }
+    }
+  ],
+  "version": "1"
+}

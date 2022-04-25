@@ -16,7 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-Tiling apidocs
+Merge apidocs
 """
 
 __license__ = "GPLv3"
@@ -27,33 +27,34 @@ __maintainer__ = "mundialis GmbH % Co. KG"
 
 from actinia_core.models.response_models import (
     ProcessingErrorResponseModel,
+    ProcessingResponseModel,
 )
+from actinia_core.models.process_chain import IOParameterBase
 
 from actinia_tiling_plugin.models.response_models.general import (
     SimpleStatusCodeResponseModel,
 )
-from actinia_tiling_plugin.models.response_models.tiling import (
-    GridTilingResponseModel,
-    TilingListResponseModel,
+from actinia_tiling_plugin.models.response_models.merge import (
+    MergeListResponseModel,
 )
 
 
-tiling_list_get_docs = {
+merge_list_get_docs = {
     # "summary" is taken from the description of the get method
-    "tags": ["Tiling"],
-    "description": "Returns The list of the tiling processes.",
+    "tags": ["Merge"],
+    "description": "Returns The list of the merge processes.",
     "responses": {
         "200": {
-            "description": "This response returns list of the tiling "
+            "description": "This response returns list of the merge "
             "processes.",
-            "schema": TilingListResponseModel,
+            "schema": MergeListResponseModel,
         }
     },
 }
 
-grid_tiling_get_docs = {
+patch_merge_get_docs = {
     # "summary" is taken from the description of the get method
-    "tags": ["Tiling"],
+    "tags": ["Merge"],
     "description": "Returns only the API description of the POST endpoint.",
     "responses": {
         "200": {
@@ -64,43 +65,43 @@ grid_tiling_get_docs = {
     },
 }
 
-grid_tiling_post_docs = {
+patch_merge_post_docs = {
     # "summary" is taken from the description of the get method
-    "tags": ["Tiling"],
-    "description": "Creates grid tiles with a specified 'width' and 'height' "
-                   "in the current computational region. The created grids "
-                   "have the given 'grid_prefix' and will be listed in the "
-                   "'process_results'. "
-                   "Minimum required user role: user.",
+    "tags": ["Merge"],
+    "description": "Merge raster, vector and STRDS data from different "
+    "mapsets defined in a 'mapsetlist' by patching them "
+    "in the new/target mapset. Minimum required user role: user.",
     "consumes": ["application/json"],
     "parameters": [
         {
-            "name": "width",
-            "description": "The width of one grid tile in map units.",
+            "name": "mapsetlist",
+            "description": "The list of mapset names which should be merged "
+            "into the given mapset.",
             "required": True,
             "in": "body",
             "schema": {"type": "string"}
         },
         {
-            "name": "height",
-            "description": "The height of one grid tile in map units.",
+            "name": "outputs",
+            "description": "A list of output parameters.",
             "required": True,
             "in": "body",
-            "schema": {"type": "string"}
+            "schema": IOParameterBase
         },
         {
-            "name": "grid_prefix",
-            "description": "The prefix of the grid tiles.",
-            "required": True,
+            "name": "keep_mapsets",
+            "description": "A boolean if it is set to 'true' then the merged "
+            "mapsets will not be deleted. The default falue is 'false', so "
+            "the merged mapset will be deleted.",
+            "required": False,
             "in": "body",
-            "schema": {"type": "string"}
+            "schema": {"type": "bool"}
         }
     ],
     "responses": {
         "200": {
-            "description": "This response returns the processing response with"
-                           " the grid tile names in the 'processing_results'.",
-            "schema": GridTilingResponseModel
+            "description": "This response returns the processing response.",
+            "schema": ProcessingResponseModel
         },
         "400": {
             "description": "This response returns a detail error message",
