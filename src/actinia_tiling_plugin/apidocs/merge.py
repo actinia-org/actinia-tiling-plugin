@@ -55,10 +55,10 @@ merge_list_get_docs = {
 patch_merge_get_docs = {
     # "summary" is taken from the description of the get method
     "tags": ["Merge"],
-    "description": "Returns only the api description of the POST endpoint.",
+    "description": "Returns only the API description of the POST endpoint.",
     "responses": {
         "200": {
-            "description": "This response returns the api description of the "
+            "description": "This response returns the API description of the "
                            "POST endpoint.",
             "schema": SimpleStatusCodeResponseModel,
         }
@@ -75,15 +75,15 @@ patch_merge_post_docs = {
     "parameters": [
         {
             "name": "mapsetlist",
-            "description": "The list of mapset names which should be merged in"
-            " the given mapset.",
+            "description": "The list of mapset names which should be merged "
+            "into the given mapset.",
             "required": True,
             "in": "body",
             "schema": {"type": "string"}
         },
         {
             "name": "outputs",
-            "description": "A list of output parametern.",
+            "description": "A list of output parameters.",
             "required": True,
             "in": "body",
             "schema": IOParameterBase
