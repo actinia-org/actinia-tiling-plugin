@@ -16,7 +16,7 @@
       "flags": "pa"
     },
     {
-      "id": "random_ndvi_raster",
+      "id": "random_ndvi_1_raster",
       "module": "r.surf.random",
       "inputs": [
         {
@@ -31,7 +31,96 @@
       "outputs": [
         {
           "param": "output",
+          "value": "ndvi_1"
+        }
+      ],
+      "flags": "i"
+    },
+    {
+      "id": "random_ndvi_2_raster",
+      "module": "r.surf.random",
+      "inputs": [
+        {
+          "param": "min",
+          "value": "0"
+        },
+        {
+          "param": "max",
+          "value": "200"
+        }
+      ],
+      "outputs": [
+        {
+          "param": "output",
+          "value": "ndvi_2"
+        }
+      ],
+      "flags": "i"
+    },
+    {
+      "id": "random_ndvi_3_raster",
+      "module": "r.surf.random",
+      "inputs": [
+        {
+          "param": "min",
+          "value": "0"
+        },
+        {
+          "param": "max",
+          "value": "200"
+        }
+      ],
+      "outputs": [
+        {
+          "param": "output",
+          "value": "ndvi_3"
+        }
+      ],
+      "flags": "i"
+    },
+    {
+      "id": "ndvi_strds_create",
+      "module": "t.create",
+      "inputs": [
+        {
+          "param": "type",
+          "value": "strds"
+        },
+        {
+          "param": "description",
+          "value": "example strds"
+        },
+        {
+          "param": "title",
+          "value": "example_strds"
+        }
+      ],
+      "outputs": [
+        {
+          "param": "output",
           "value": "ndvi"
+        }
+      ]
+    },
+    {
+      "id": "ndvi_strds_register",
+      "module": "t.register",
+      "inputs": [
+        {
+          "param": "input",
+          "value": "ndvi"
+        },
+        {
+          "param": "maps",
+          "value": "ndvi_1,ndvi_2,ndvi_3"
+        },
+        {
+          "param": "start",
+          "value": "2022-01-01"
+        },
+        {
+          "param": "increment",
+          "value": "1 months"
         }
       ],
       "flags": "i"

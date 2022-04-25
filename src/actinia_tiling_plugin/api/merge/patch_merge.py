@@ -24,16 +24,21 @@ __author__ = "Anika Weinmann"
 __copyright__ = "Copyright 2022 mundialis GmbH & Co. KG"
 __maintainer__ = "mundialis GmbH % Co. KG"
 
+from copy import deepcopy
+import re
+import os
+
+from uuid import uuid4
 from flask import make_response, jsonify
 from flask_restful_swagger_2 import swagger
 import pickle
-from copy import deepcopy
 
+
+from actinia_core.core.common.config import global_config
 from actinia_core.processing.actinia_processing.ephemeral.\
     persistent_processing import PersistentProcessing
 from actinia_core.rest.base.resource_base import ResourceBase
 from actinia_core.core.common.redis_interface import enqueue_job
-# from actinia_core.core.common.process_chain import ProcessChainConverter
 from actinia_core.processing.actinia_processing.persistent.mapset_management \
     import (
         PersistentMapsetDeleter,
@@ -112,29 +117,30 @@ class AsyncMergeProcessPatch(PersistentProcessing):
         self.response_model_class = GridTilingResponseModel
         self.num_of_steps = 0
         self.num_steps = {
-            "raster": 2,
-            "vector": 3,
-            "strds": 0,
-            "stvds": 0,
+            "raster": [2],
+            "vector": [3],
+            "strds": [3, 2],
+            "stvds": [0],
         }
         self.step = 0
         self.raster_maps = list()
         self.vector_maps = list()
         self.strds = list()
+        self.strds_infos = dict()
         self.stvds = list()
         for output in self.request_data["outputs"]:
             if output["param"] == "raster":
                 self.raster_maps = output["value"].split(",")
             elif output["param"] == "vector":
                 self.vector_maps = output["value"].split(",")
-            # elif output["param"] == "strds":
-            #     self.strds = output["value"].split(",")
+            elif output["param"] == "strds":
+                self.strds = output["value"].split(",")
             # elif output["param"] == "stvds":
             #     self.stvds = output["value"].split(",")
             else:
                 log.info(f"Output type '{output['param']}' not yet supported!")
             self.step += (
-                self.num_steps[output["param"]] * len(
+                sum(self.num_steps[output["param"]]) * len(
                     output["value"].split(","))
             )
         self.mapsetlist = self.request_data["mapsetlist"]
@@ -204,7 +210,7 @@ class AsyncMergeProcessPatch(PersistentProcessing):
         }
         plr, _ = pctpl_to_pl(tpl, tpl_rpatch)
         self._execute_process_list(plr)
-        self.num_of_steps += self.num_steps["raster"]
+        self.num_of_steps += self.num_steps["raster"][0]
         self._set_progress()
 
     def _patch_vector(self, vect):
@@ -227,36 +233,104 @@ class AsyncMergeProcessPatch(PersistentProcessing):
         }
         plv, _ = pctpl_to_pl(tpl, tpl_vpatch)
         self._execute_process_list(plv)
-        self.num_of_steps += self.num_steps["vector"]
+        self.num_of_steps += self.num_steps["vector"][0]
+        self._set_progress()
+
+    def _prepare_patch_strds(self):
+        """Prepares the patch of STRDS by reading one STRDS and adding the
+        rasters to the list of rasters to patch and writing other information
+        to the dict self.strds_infos.
+        """
+        for strds in self.strds:
+            # strds get list of rasters and other STRDS infos
+            tpl_values_strds = {"strds": f"{strds}@{self.mapsetlist[0]}"}
+            pl_strds, pconv = pctpl_to_pl(
+                "patch/pc_strds_list_rasters.json", tpl_values_strds)
+            self.output_parser_list = pconv.output_parser_list
+            self._execute_process_list(pl_strds)
+            self._parse_module_outputs()
+            strds_rasters = self.module_results["rasters"]
+            strds_desc = self.module_results["strds_description"]
+            strds_info = self.module_results["strds_info"]
+            col_names = strds_rasters[0].split("|")
+            strds_raster_infos = dict()
+            strds_raster_infos["rasters"] = list()
+            for idx in range(1, len(strds_rasters)):
+                rast_info = dict()
+                rinfos = strds_rasters[idx].split("|")
+                for j in range(len(rinfos)):
+                    rast_info[col_names[j]] = rinfos[j]
+                rast_info["all"] = strds_rasters[idx]
+                strds_raster_infos["rasters"].append(rast_info)
+                if rast_info["name"] not in self.raster_maps:
+                    self.raster_maps.append(rast_info["name"])
+            desc = "".join([entry[2:] if entry not in [
+                "# Title:", "# Description:", "# Command history:"] else entry
+                for entry in strds_desc])
+            strds_raster_infos["title"] = re.findall(
+                r"# Title:(.*?)# Description:", desc
+            )[0]
+            strds_raster_infos["description"] = re.findall(
+                r"# Description:(.*?)# Command history:", desc
+            )[0]
+            strds_raster_infos["temporaltype"] = strds_info["temporal_type"]
+            strds_raster_infos["semantictype"] = strds_info["semantic_type"]
+            self.strds_infos[strds] = strds_raster_infos
+            self.num_of_steps += self.num_steps["strds"][0]
+            self.step += (
+                self.num_steps["raster"][0] * len(
+                    strds_raster_infos["rasters"]
+                )
+            )
+            self._set_progress()
+
+    def _patch_strds(self, strds_name, strds_info):
+        """Creates new STRDS as a duplicate with patched rasters.
+        """
+        id = str(uuid4())
+        tmp_strds_file = os.path.join(
+            global_config.TMP_WORKDIR, f"strds_{strds_name}_{id}.txt"
+        )
+        # write file to register the rasters in the STRDS without the mapset
+        with open(tmp_strds_file, "w") as f:
+            for rast in strds_info["rasters"]:
+                r_info = rast["all"].replace(
+                    f"{self.mapsetlist[0]}|", ""
+                )
+                f.write(r_info + "\n")
+        tpl_values_strds_create = {
+            "strds": f"{strds_name}",
+            "temporaltype": strds_info["temporaltype"],
+            "semantictype": strds_info["semantictype"],
+            "description": strds_info["description"],
+            "title": strds_info["title"],
+            "file": tmp_strds_file,
+        }
+        pl_strds_c, _ = pctpl_to_pl(
+            "patch/pc_strds_create.json", tpl_values_strds_create)
+        self._execute_process_list(pl_strds_c)
+        os.remove(tmp_strds_file)
+        self.num_of_steps += self.num_steps["strds"][1]
         self._set_progress()
 
     def _execute(self):
 
-        outputs = self.request_data["outputs"]
         keep_mapsets = self.request_data["keep_mapsets"]
         self.required_mapsets.extend(self.mapsetlist)
 
         self._execute_preparation()
-        # pconv = ProcessChainConverter()
-
         self._set_progress()
 
-        # patch the output maps
-        for output in outputs:
-            if output["param"] == "raster":
-                rasters = output["value"].split(",")
-                for rast in rasters:
-                    self._patch_raster(rast)
+        self._prepare_patch_strds()
+        for rast in self.raster_maps:
+            self._patch_raster(rast)
+        for vect in self.vector_maps:
+            self._patch_vector(vect)
+        # create new STRDS as a duplicate with patched rasters
+        for strds_name, strds_info in self.strds_infos.items():
+            self._patch_strds(strds_name, strds_info)
 
-            elif output["param"] == "vector":
-                vectors = output["value"].split(",")
-                for vect in vectors:
-                    self._patch_vector(vect)
-
-            # TODO STRDS + STVDS
-
-            # else:
-            # TODO not yet supported
+        # TODO STVDS
 
         # delete temporary mapsets
         if keep_mapsets is not True and keep_mapsets.lower() != "true":
@@ -265,7 +339,5 @@ class AsyncMergeProcessPatch(PersistentProcessing):
 
         self._execute_finalization()
 
-        # # make response pretty
-        # self.module_results = list()
-        # for cat in range(1, num_grid_cells + 1):
-        #     self.module_results.append(f"{grid_prefix}{cat}")
+        # make response pretty
+        self.module_results = list()

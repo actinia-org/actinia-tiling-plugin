@@ -20,13 +20,18 @@ Tests: Actinia resource test case base
 """
 
 import atexit
+import base64
 import os
 import signal
 import time
 
+from werkzeug.datastructures import Headers
+
 from actinia_core.testsuite import ActiniaTestCaseBase, URL_PREFIX
+from actinia_core.core.common.user import ActiniaUser
 from actinia_core.core.common.config import global_config
 from actinia_core.endpoints import create_endpoints
+
 
 __license__ = "GPLv3"
 __author__ = "Sören Gebbert, Anika Weinmann"
@@ -98,4 +103,35 @@ setup_environment()
 
 
 class ActiniaResourceTestCaseBase(ActiniaTestCaseBase):
-    pass
+    @classmethod
+    def create_user(cls, name="guest", role="guest",
+                    group="group", password="abcdefgh",
+                    accessible_datasets=None, process_num_limit=1000,
+                    process_time_limit=6000, accessible_modules=None):
+
+        auth = bytes('%s:%s' % (name, password), "utf-8")
+
+        # We need to create an HTML basic authorization header
+        cls.auth_header[role] = Headers()
+        cls.auth_header[role].add('Authorization',
+                                  'Basic ' + base64.b64encode(auth).decode())
+
+        # Make sure the user database is empty
+        user = ActiniaUser(name)
+        if user.exists():
+            user.delete()
+        # Create a user in the database
+        user = ActiniaUser.create_user(name,
+                                       group,
+                                       password,
+                                       user_role=role,
+                                       accessible_datasets=accessible_datasets,
+                                       process_num_limit=process_num_limit,
+                                       process_time_limit=process_time_limit)
+        if accessible_modules is None:
+            accessible_modules = ["sleep"]
+        user.add_accessible_modules(accessible_modules)
+        user.update()
+        cls.users_list.append(user)
+
+        return name, group, cls.auth_header[role]
