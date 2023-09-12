@@ -46,7 +46,7 @@ jobs:
         sed -i "s+# RUN make test+RUN make integrationtest+g" docker/actinia-tiling-plugin-test/Dockerfile
     - name: Integration tests of actinia-tiling-plugin
       id: docker_build
-      uses: docker/build-push-action@v4
+      uses: docker/build-push-action@v5
       with:
         push: false
         tags: actinia-tiling-plugin-test:alpine
