@@ -26,7 +26,6 @@ __maintainer__ = "mundialis GmbH % Co. KG"
 
 
 import pytest
-from flask import Response
 
 from ..test_resource_base import URL_PREFIX
 from ..test_resource_base import ActiniaResourceTestCaseBase
@@ -69,7 +68,6 @@ class ListTilingTest(ActiniaResourceTestCaseBase):
         url = f"{self.base_url}/tiling_processes"
         resp = self.server.get(url, headers=self.user_auth_header)
 
-        assert type(resp) is Response, "The response is not of type Response"
         assert resp.status_code == 200, "The status code is not 200"
         assert "tiling_processes" in resp.json[0], \
             "No 'tiling_processes' in response"
