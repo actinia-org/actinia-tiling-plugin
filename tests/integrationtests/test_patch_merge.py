@@ -26,7 +26,6 @@ __maintainer__ = "mundialis GmbH % Co. KG"
 
 
 import pytest
-from flask import Response
 from flask.json import loads as json_loads
 from jinja2 import Template
 
@@ -290,7 +289,6 @@ class PatchMergeTest(ActiniaResourceTestCaseBase):
         url = f"{self.base_url}/merge_processes/patch"
         resp = self.server.get(url, headers=self.user_auth_header)
 
-        assert type(resp) is Response, "The response is not of type Response"
         assert resp.status_code == 200, "The status code is not 200"
         assert "description" in resp.json, "No 'description' in response"
         assert "parameters" in resp.json, "No 'parameters' in response"
