@@ -26,7 +26,7 @@ __maintainer__ = "mundialis GmbH % Co. KG"
 
 
 import pytest
-from flask import Response
+# from flask import Response
 
 from ..test_resource_base import URL_PREFIX
 from ..test_resource_base import ActiniaResourceTestCaseBase
