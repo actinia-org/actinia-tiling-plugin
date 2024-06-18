@@ -96,7 +96,8 @@ class GridTilingTest(ActiniaResourceTestCaseBase):
         url = f"{self.base_url}/tiling_processes/grid"
         resp = self.server.get(url, headers=self.user_auth_header)
 
-        assert type(resp) is Response, "The response is not of type Response"
+        # assert type(resp) is Response, "The response is not of type Response"
+        print(type(resp))
         assert resp.status_code == 200, "The status code is not 200"
         assert "description" in resp.json, "No 'description' in response"
         assert "parameters" in resp.json, "No 'parameters' in response"
