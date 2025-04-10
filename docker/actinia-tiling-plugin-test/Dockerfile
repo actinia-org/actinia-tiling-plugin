@@ -10,7 +10,7 @@ ENV DEFAULT_CONFIG_PATH /etc/default/actinia-tiling-plugin-test
 
 # install things only for tests
 RUN apk add redis
-RUN pip3 install iniconfig colorlog pwgen
+RUN pip3 install iniconfig colorlog pwgen pytest pytest-cov
 
 # COPY docker/actinia-tiling-plugin-test/start.sh /src/start.sh
 

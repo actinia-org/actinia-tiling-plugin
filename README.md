@@ -74,7 +74,7 @@ resp_data2 = json_loads(rv2.data)
 ## Small Example
 ```
 actinia_base_url=http://localhost:8088/api/v3
-mapset_url=${actinia_base_url}/locations/loc_25832/mapsets/tiling_usermapset
+mapset_url=${actinia_base_url}/projects/loc_25832/mapsets/tiling_usermapset
 auth="actinia-gdi:actinia-gdi"
 ```
 
@@ -127,7 +127,7 @@ curl -u ${auth} -X GET ${mapset_url}/vector_layers | jq
 curl -u ${auth} -X GET ${mapset_url}/raster_layers | jq
 curl -u ${auth} -X GET ${mapset_url}/strds | jq
 
-curl -u ${auth} -X GET ${actinia_base_url}/locations/loc_25832/mapsets | jq
+curl -u ${auth} -X GET ${actinia_base_url}/projects/loc_25832/mapsets | jq
 ```
 
 

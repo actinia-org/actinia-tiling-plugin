@@ -24,6 +24,7 @@ __author__ = "Anika Weinmann"
 __copyright__ = "Copyright 2022 mundialis GmbH & Co. KG"
 __maintainer__ = "mundialis GmbH % Co. KG"
 
+from actinia_core.endpoints import get_endpoint_class_name
 
 from actinia_tiling_plugin.api.tiling_list import TilingListResource
 from actinia_tiling_plugin.api.tiling.tiling_grid import \
@@ -34,29 +35,55 @@ from actinia_tiling_plugin.api.merge.patch_merge import \
 
 
 # endpoints loaded if run as actinia-core plugin as well as standalone app
-def create_endpoints(flask_api):
+def create_project_endpoints(flask_api, projects_url_part="projects"):
+    """
+    Function to add resources with "projects" inside the endpoint url.
+    Args:
+        flask_api (flask_restful_swagger_2.Api): Flask api
+        projects_url_part (str): The name of the projects inside the endpoint
+                                 URL; to add deprecated location endpoints set
+                                 it to "locations"
+    """
 
     # tiling
     flask_api.add_resource(
         TilingListResource,
-        "/locations/<string:location_name>/mapsets/"
+        f"/{projects_url_part}/<string:project_name>/mapsets/"
         "<string:mapset_name>/tiling_processes",
+        endpoint=get_endpoint_class_name(
+            TilingListResource, projects_url_part
+        ),
     )
 
     flask_api.add_resource(
         AsyncTilingProcessGridResource,
-        "/locations/<string:location_name>/mapsets/"
+        f"/{projects_url_part}/<string:project_name>/mapsets/"
         "<string:mapset_name>/tiling_processes/grid",
+        endpoint=get_endpoint_class_name(
+            AsyncTilingProcessGridResource, projects_url_part
+        ),
     )
 
     # merge
     flask_api.add_resource(
         MergeListResource,
-        "/locations/<string:location_name>/mapsets/"
+        f"/{projects_url_part}/<string:project_name>/mapsets/"
         "<string:mapset_name>/merge_processes",
+        endpoint=get_endpoint_class_name(
+            MergeListResource, projects_url_part
+        ),
     )
     flask_api.add_resource(
         AsyncMergeProcessPatchResource,
-        "/locations/<string:location_name>/mapsets/"
+        f"/{projects_url_part}/<string:project_name>/mapsets/"
         "<string:mapset_name>/merge_processes/patch",
+        endpoint=get_endpoint_class_name(
+            AsyncMergeProcessPatchResource, projects_url_part
+        ),
     )
+
+
+def create_endpoints(flask_api):
+    # add deprecated location and project endpoints
+    create_project_endpoints(flask_api)
+    create_project_endpoints(flask_api, projects_url_part="locations")

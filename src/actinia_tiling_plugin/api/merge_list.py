@@ -38,7 +38,7 @@ class MergeListResource(ResourceBase):
     """Returns a list of all merge processes"""
 
     @swagger.doc(merge.merge_list_get_docs)
-    def get(self, location_name, mapset_name):
+    def get(self, project_name, mapset_name):
         """Returns a list of all merge processes"""
 
         patch_doc = merge.patch_merge_post_docs

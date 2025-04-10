@@ -29,6 +29,8 @@ import pytest
 from flask.json import loads as json_loads
 from jinja2 import Template
 
+from actinia_core.version import init_versions, G_VERSION
+
 from ..test_resource_base import URL_PREFIX
 from ..test_resource_base import ActiniaResourceTestCaseBase
 
@@ -241,9 +243,18 @@ PC_MERGE_PATCH = """{
 
 class PatchMergeTest(ActiniaResourceTestCaseBase):
 
-    location = "nc_spm_08"
+    project_url_part = "projects"
+
+    # set project_url_part to "locations" if GRASS GIS version < 8.4
+    init_versions()
+    grass_version_s = G_VERSION["version"]
+    grass_version = [int(item) for item in grass_version_s.split(".")[:2]]
+    if grass_version < [8, 4]:
+        project_url_part = "locations"
+
+    project = "nc_spm_08"
     mapset = "merge_test_mapset"
-    base_url = f"{URL_PREFIX}/locations/{location}/mapsets/{mapset}"
+    base_url = f"{URL_PREFIX}/{project_url_part}/{project}/mapsets/{mapset}"
     content_type = "application/json"
     grids = ["grid1", "grid2", "grid3", "grid4"]
     created_mapsets = list()
@@ -260,15 +271,14 @@ class PatchMergeTest(ActiniaResourceTestCaseBase):
 
     def _delete_mapset(self, mapset_name):
         rv = self.server.delete(
-            URL_PREFIX
-            + "/locations/%s/mapsets/%s/lock"
-            % (self.location, mapset_name),
+            f"{URL_PREFIX}/{self.project_url_part}/{self.project}/mapsets/"
+            "{self.mapset}/lock",
             headers=self.admin_auth_header,
         )
         self.waitAsyncStatusAssertHTTP(rv, headers=self.admin_auth_header)
         rv2 = self.server.delete(
-            URL_PREFIX
-            + "/locations/%s/mapsets/%s" % (self.location, mapset_name),
+            f"{URL_PREFIX}/{self.project_url_part}/{self.project}/mapsets/"
+            "{self.mapset}",
             headers=self.admin_auth_header,
         )
         self.waitAsyncStatusAssertHTTP(rv2, headers=self.admin_auth_header)
@@ -283,7 +293,7 @@ class PatchMergeTest(ActiniaResourceTestCaseBase):
     def test_get_patch_apidocs(self):
         """Test the get method of merge patch endpoint"""
         # create mapset
-        self.create_new_mapset(self.mapset, self.location)
+        self.create_new_mapset(self.mapset, self.project)
         self.created_mapsets.append(self.mapset)
 
         url = f"{self.base_url}/merge_processes/patch"
@@ -349,7 +359,8 @@ class PatchMergeTest(ActiniaResourceTestCaseBase):
 
     def _check_merge(self, keep_mapsets):
         # check mapsets
-        mapset_url = f"{URL_PREFIX}/locations/{self.location}/mapsets"
+        mapset_url = (f"{URL_PREFIX}/{self.project_url_part}/{self.project}/"
+                      "mapsets")
         rv_mapset = self.server.get(
             mapset_url,
             headers=self.user_auth_header,
@@ -430,7 +441,7 @@ class PatchMergeTest(ActiniaResourceTestCaseBase):
         keep_mapsets = True
 
         # create mapset
-        self.create_new_mapset(self.mapset, self.location)
+        self.create_new_mapset(self.mapset, self.project)
         self.created_mapsets.append(self.mapset)
 
         self._create_grid()
@@ -461,7 +472,7 @@ class PatchMergeTest(ActiniaResourceTestCaseBase):
         keep_mapsets = False
 
         # create mapset
-        self.create_new_mapset(self.mapset, self.location)
+        self.create_new_mapset(self.mapset, self.project)
         self.created_mapsets.append(self.mapset)
 
         self._create_grid()
