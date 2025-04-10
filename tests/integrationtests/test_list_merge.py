@@ -55,13 +55,13 @@ class ListMergeTest(ActiniaResourceTestCaseBase):
         if self.mapset_created is True:
             rv = self.server.delete(
                 f"{URL_PREFIX}/{self.project_url_part}/{self.project}/mapsets/"
-                "{self.mapset}/lock",
+                f"{self.mapset}/lock",
                 headers=self.admin_auth_header,
             )
             self.waitAsyncStatusAssertHTTP(rv, headers=self.admin_auth_header)
             rv2 = self.server.delete(
                 f"{URL_PREFIX}/{self.project_url_part}/{self.project}/mapsets/"
-                "{self.mapset}",
+                f"{self.mapset}",
                 headers=self.admin_auth_header,
             )
             self.waitAsyncStatusAssertHTTP(rv2, headers=self.admin_auth_header)

@@ -272,13 +272,13 @@ class PatchMergeTest(ActiniaResourceTestCaseBase):
     def _delete_mapset(self, mapset_name):
         rv = self.server.delete(
             f"{URL_PREFIX}/{self.project_url_part}/{self.project}/mapsets/"
-            "{self.mapset}/lock",
+            f"{mapset_name}/lock",
             headers=self.admin_auth_header,
         )
         self.waitAsyncStatusAssertHTTP(rv, headers=self.admin_auth_header)
         rv2 = self.server.delete(
             f"{URL_PREFIX}/{self.project_url_part}/{self.project}/mapsets/"
-            "{self.mapset}",
+            f"{mapset_name}",
             headers=self.admin_auth_header,
         )
         self.waitAsyncStatusAssertHTTP(rv2, headers=self.admin_auth_header)
