@@ -12,7 +12,7 @@ docker-compose -f docker/docker-compose.yml up -d
 ```
 
 ### Installation hints
-* If you get an error like: `ERROR: for docker_redis_1  Cannot start service redis: network xxx not found` you can try the following:
+* If you get an error like: `ERROR: for docker_kvdb_1  Cannot start service valkey: network xxx not found` you can try the following:
 ```
 docker-compose -f docker/docker-compose.yml down
 # remove all custom networks not used by a container

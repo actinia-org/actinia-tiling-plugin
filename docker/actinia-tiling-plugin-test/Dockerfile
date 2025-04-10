@@ -9,7 +9,7 @@ ENV ACTINIA_CUSTOM_TEST_CFG /etc/default/actinia-tiling-plugin-test
 ENV DEFAULT_CONFIG_PATH /etc/default/actinia-tiling-plugin-test
 
 # install things only for tests
-RUN apk add redis
+RUN apk add valkey
 RUN pip3 install iniconfig colorlog pwgen
 
 # COPY docker/actinia-tiling-plugin-test/start.sh /src/start.sh
@@ -31,7 +31,7 @@ COPY . /src/actinia-tiling-plugin/
 
 WORKDIR /src/actinia-tiling-plugin/
 
-RUN chmod a+x tests_with_redis.sh
+RUN chmod a+x tests_with_kvdb.sh
 RUN make install
 
 # RUN make test

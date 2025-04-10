@@ -19,13 +19,13 @@ dist:
 	python3 setup.py dist
 
 test:
-	./tests_with_redis.sh
+	./tests_with_kvdb.sh
 
 unittest:
 	python3 setup.py test --addopts "-m unittest"
 
 devtest:
-	./tests_with_redis.sh dev
+	./tests_with_kvdb.sh dev
 
 integrationtest:
-	./tests_with_redis.sh integrationtest
+	./tests_with_kvdb.sh integrationtest
