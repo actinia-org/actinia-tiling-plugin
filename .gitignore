@@ -39,7 +39,7 @@ dist/*
 sdist/*
 
 # docker
-docker/redis_data/dump.rdb
+docker/valkey_data/dump.rdb
 !docker/actinia-tiling-plugin-test/actinia-tiling-plugin-test.cfg
 
 # Development env

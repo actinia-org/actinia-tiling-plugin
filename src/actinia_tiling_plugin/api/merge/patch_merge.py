@@ -38,7 +38,7 @@ from actinia_core.core.common.config import global_config
 from actinia_core.processing.actinia_processing.ephemeral.\
     persistent_processing import PersistentProcessing
 from actinia_core.rest.base.resource_base import ResourceBase
-from actinia_core.core.common.redis_interface import enqueue_job
+from actinia_core.core.common.kvdb_interface import enqueue_job
 from actinia_core.processing.actinia_processing.persistent.mapset_management \
     import (
         PersistentMapsetDeleter,
