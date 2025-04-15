@@ -57,12 +57,12 @@ class AsyncMergeProcessPatchResource(ResourceBase):
     patching the maps.
     """
 
-    def _execute(self, location_name, mapset_name):
+    def _execute(self, project_name, mapset_name):
 
         rdc = self.preprocess(
             has_json=True,
             has_xml=False,
-            location_name=location_name,
+            project_name=project_name,
             mapset_name=mapset_name,
         )
         if rdc:
@@ -74,16 +74,16 @@ class AsyncMergeProcessPatchResource(ResourceBase):
         return rdc
 
     @swagger.doc(merge.patch_merge_post_docs)
-    def post(self, location_name, mapset_name):
+    def post(self, project_name, mapset_name):
         """Merging mapsets with same raster, vector, ... maps in one mapset by
         patching the maps.
         """
-        self._execute(location_name, mapset_name)
+        self._execute(project_name, mapset_name)
         html_code, response_model = pickle.loads(self.response_data)
         return make_response(jsonify(response_model), html_code)
 
     @swagger.doc(merge.patch_merge_get_docs)
-    def get(self, location_name, mapset_name):
+    def get(self, project_name, mapset_name):
         """Get description of the patch merge process.
         """
         process_desc = deepcopy(merge.patch_merge_post_docs)
@@ -178,7 +178,7 @@ class AsyncMergeProcessPatch(PersistentProcessing):
             self._lock_temp_mapset()
 
     def _execute_finalization(self):
-        # Copy local mapset to original location, merge mapsets
+        # Copy local mapset to original project, merge mapsets
         self._copy_merge_tmp_mapset_to_target_mapset()
 
     def _generate_name_mapset_str(self, name):

@@ -38,7 +38,7 @@ class TilingListResource(ResourceBase):
     """Returns a list of all tiling prcesses"""
 
     @swagger.doc(tiling.tiling_list_get_docs)
-    def get(self, location_name, mapset_name):
+    def get(self, project_name, mapset_name):
         """Returns a list of all tiling prcesses"""
 
         grid_doc = tiling.grid_tiling_post_docs

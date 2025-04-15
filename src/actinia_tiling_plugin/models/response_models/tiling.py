@@ -112,9 +112,9 @@ class GridTilingResponseModel(ProcessingResponseModel):
         "api_info": {
             "endpoint": "asynctilingprocessgridresource",
             "method": "POST",
-            "path": f"{URL_PREFIX}/locations/loc_25832/mapsets/tiling_"
+            "path": f"{URL_PREFIX}/projects/loc_25832/mapsets/tiling_"
             "user/tiling_processes/grid",
-            "request_url": f"http://localhost:8088{URL_PREFIX}/locations/"
+            "request_url": f"http://localhost:8088{URL_PREFIX}/projects/"
             "loc_25832/mapsets/tiling_user/tiling_processes/grid",
         },
         "datetime": "2022-03-18 07:21:48.784597",

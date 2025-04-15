@@ -22,7 +22,7 @@ test:
 	./tests_with_kvdb.sh
 
 unittest:
-	python3 setup.py test --addopts "-m unittest"
+	pytest -m unittest
 
 devtest:
 	./tests_with_kvdb.sh dev

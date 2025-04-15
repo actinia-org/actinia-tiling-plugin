@@ -27,15 +27,26 @@ __maintainer__ = "mundialis GmbH % Co. KG"
 
 import pytest
 
+from actinia_core.version import init_versions, G_VERSION
+
 from ..test_resource_base import URL_PREFIX
 from ..test_resource_base import ActiniaResourceTestCaseBase
 
 
 class ListMergeTest(ActiniaResourceTestCaseBase):
 
-    location = "nc_spm_08"
+    project_url_part = "projects"
+
+    # set project_url_part to "locations" if GRASS GIS version < 8.4
+    init_versions()
+    grass_version_s = G_VERSION["version"]
+    grass_version = [int(item) for item in grass_version_s.split(".")[:2]]
+    if grass_version < [8, 4]:
+        project_url_part = "locations"
+
+    project = "nc_spm_08"
     mapset = "merge_test_mapset"
-    base_url = f"{URL_PREFIX}/locations/{location}/mapsets/{mapset}"
+    base_url = f"{URL_PREFIX}/{project_url_part}/{project}/mapsets/{mapset}"
     content_type = "application/json"
 
     mapset_created = False
@@ -43,15 +54,14 @@ class ListMergeTest(ActiniaResourceTestCaseBase):
     def tearDown(self):
         if self.mapset_created is True:
             rv = self.server.delete(
-                URL_PREFIX
-                + "/locations/%s/mapsets/%s/lock"
-                % (self.location, self.mapset),
+                f"{URL_PREFIX}/{self.project_url_part}/{self.project}/mapsets/"
+                f"{self.mapset}/lock",
                 headers=self.admin_auth_header,
             )
             self.waitAsyncStatusAssertHTTP(rv, headers=self.admin_auth_header)
             rv2 = self.server.delete(
-                URL_PREFIX
-                + "/locations/%s/mapsets/%s" % (self.location, self.mapset),
+                f"{URL_PREFIX}/{self.project_url_part}/{self.project}/mapsets/"
+                f"{self.mapset}",
                 headers=self.admin_auth_header,
             )
             self.waitAsyncStatusAssertHTTP(rv2, headers=self.admin_auth_header)
@@ -63,7 +73,7 @@ class ListMergeTest(ActiniaResourceTestCaseBase):
     def test_get_merge_apidocs(self):
         """Test the get method of list merge processes endpoint"""
         # create mapset
-        self.create_new_mapset(self.mapset, self.location)
+        self.create_new_mapset(self.mapset, self.project)
 
         url = f"{self.base_url}/merge_processes"
         resp = self.server.get(url, headers=self.user_auth_header)
