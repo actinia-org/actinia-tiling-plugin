@@ -62,7 +62,7 @@ def setup_environment():
     global_config.KVDB_SERVER_SERVER = "localhost"
     global_config.KVDB_SERVER_PORT = 7000
     # Set the path to kvdb WORKER_LOGFILE
-    # global_config.WORKER_LOGFILE = "/var/log/kvdb/kvdb"
+    # global_config.WORKER_LOGFILE = "/var/log/valkey/valkey"
 
     # home = os.getenv("HOME")
 
