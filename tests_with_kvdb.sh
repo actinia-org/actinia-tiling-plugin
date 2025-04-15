@@ -10,8 +10,8 @@ valkey-cli ping
 # sleep 10
 
 # run tests
-echo $ACTINIA_CUSTOM_TEST_CFG
-echo $DEFAULT_CONFIG_PATH
+echo "$ACTINIA_CUSTOM_TEST_CFG"
+echo "$DEFAULT_CONFIG_PATH"
 
 if [ "$1" = "dev" ]
 then
