@@ -1,23 +1,23 @@
-# -*- coding: utf-8 -*-
-"""
-    Setup file for actinia_tiling_plugin.
-    Use setup.cfg to configure your project.
+#!/usr/bin/env python
+"""Copyright (c) 2025 mundialis GmbH & Co. KG.
 
-    This file was generated with PyScaffold 3.2.3.
-    PyScaffold helps you to put up the scaffold of your new Python project.
-    Learn more under: https://pyscaffold.org/
-"""
-import sys
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-from pkg_resources import VersionConflict, require
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+Plugin setup file
+"""
+
 from setuptools import setup
 
-try:
-    require("setuptools>=38.3")
-except VersionConflict:
-    print("Error: version of setuptools is too old (<38.3)!")
-    sys.exit(1)
-
-
 if __name__ == "__main__":
-    setup(use_pyscaffold=True)
+    setup()

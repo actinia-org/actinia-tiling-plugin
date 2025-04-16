@@ -27,7 +27,7 @@ docker-compose -f docker/docker-compose.yml build
 docker-compose -f docker/docker-compose.yml run --rm --service-ports --entrypoint sh actinia
 
 # install the plugin
-(cd /src/actinia-tiling-plugin && python3 setup.py install)
+(cd /src/actinia-tiling-plugin && pip3 install .)
 # start actinia-core with your plugin
 gunicorn -b 0.0.0.0:8088 -w 1 --access-logfile=- -k gthread actinia_core.main:flask_app
 ```
