@@ -32,6 +32,6 @@ COPY . /src/actinia-tiling-plugin/
 
 WORKDIR /src/actinia-tiling-plugin/
 
-RUN make install
+RUN pip install .
 
 # RUN make test

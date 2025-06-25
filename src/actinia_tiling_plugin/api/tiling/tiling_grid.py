@@ -30,9 +30,8 @@ import pickle
 from uuid import uuid4
 from copy import deepcopy
 
-from actinia_core.processing.actinia_processing.ephemeral.\
-    persistent_processing import PersistentProcessing
-from actinia_core.rest.base.resource_base import ResourceBase
+from actinia_processing_lib.persistent_processing import PersistentProcessing
+from actinia_rest_lib.resource_base import ResourceBase
 from actinia_core.core.common.kvdb_interface import enqueue_job
 from actinia_core.core.common.process_chain import ProcessChainConverter
 
