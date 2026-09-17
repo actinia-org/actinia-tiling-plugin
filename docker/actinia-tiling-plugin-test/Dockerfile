@@ -1,12 +1,12 @@
-FROM mundialis/actinia-core:latest as actinia_test
+FROM mundialis/actinia-core:latest AS actinia_test
 
 LABEL authors="Carmen Tawalika,Anika Weinmann"
 LABEL maintainer="tawalika@mundialis.de,weinmann@mundialis.de"
 
-ENV ACTINIA_CUSTOM_TEST_CFG /etc/default/actinia-tiling-plugin-test
+ENV ACTINIA_CUSTOM_TEST_CFG=/etc/default/actinia-tiling-plugin-test
 
 # TODO do not set DEFAULT_CONFIG_PATH if this is fixed
-ENV DEFAULT_CONFIG_PATH /etc/default/actinia-tiling-plugin-test
+ENV DEFAULT_CONFIG_PATH=/etc/default/actinia-tiling-plugin-test
 
 # install things only for tests
 RUN apk add valkey valkey-cli
@@ -32,6 +32,6 @@ COPY . /src/actinia-tiling-plugin/
 
 WORKDIR /src/actinia-tiling-plugin/
 
-RUN pip install .
+RUN pip3 install .
 
 # RUN make test
